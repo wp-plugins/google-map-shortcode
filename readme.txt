@@ -14,12 +14,12 @@ This plugin allows you to include instances of Google Map in your blogs using th
 
 Special Features:
 
-    * Allows to include more than one google map instance on your pages.
-    * You can use the shortcode on your post, pages and theme files.
-    * When you click on a point in the map the window box opened shows part of the content of your posts (post title, thumbnails, excerpt)
-    * You can customize the html of the info window box on your maps
-    * One custom field defines the address of a post
-    * The shortcode allows different options to customize your maps like: inicial zoom, width, height, under categories, show external links, post ID, number of points, specific address
+*   Allows to include more than one google map instance on your pages.
+*   You can use the shortcode on your post, pages and theme files.
+*   When you click on a point in the map the window box opened shows part of the content of your posts (post title, thumbnails, excerpt)
+*   You can customize the html of the info window box on your maps
+*   One custom field defines the address of a post
+*   The shortcode allows different options to customize your maps like: inicial zoom, width, height, under categories, show external links, post ID, number of points, specific address
 
 For more details and examples visit the <a href="http://web-argument.com/google-map-shortcode/">plugin page</a>.
 
