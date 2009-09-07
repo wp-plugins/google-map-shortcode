@@ -1,0 +1,28 @@
+/**
+ * Google Map Shortcode 
+ * Version: 1.1
+ * Author: Alain Gonzalez
+ * Author URI: http://web-argument.com/
+*/
+ 
+.gm_info_cont{
+	width:250px; 
+	height:200px;
+	padding-right:10px;
+}
+
+.gm_info_title{
+	margin:0;
+	font-weight:bold;
+}
+
+.gm_info_address{
+	font-size:10px;
+	text-align:left;
+	font-weight:bold;
+}
+
+.gm_info_img{
+	width:100px; 
+	padding-right:15px
+}

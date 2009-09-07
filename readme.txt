@@ -1,6 +1,6 @@
 === Google Map Shortcode ===
 Contributors: Alaingg
-Donate link: http://web-argument.com/google-map-shortcode/
+Donate link: http://web-argument.com/google-map-shortcode-version-11/
 Tags: google map, shortcode, map, categories, widget, post map, point, marker, list, location
 Requires at least: 2.5
 Tested up to: 2.8
@@ -21,7 +21,7 @@ Special Features:
 *   One custom field defines the address of a post
 *   The shortcode allows different options to customize your maps like: inicial zoom, width, height, under categories, show external links, post ID, number of points, specific address
 
-For more details and examples visit the <a href="http://web-argument.com/google-map-shortcode/">plugin page</a>.
+For more details and examples visit the <a href="http://web-argument.com/google-map-shortcode-version-11/">plugin page</a>.
 
 == Installation ==
 
@@ -43,3 +43,10 @@ For more details and examples visit the <a href="http://web-argument.com/google-
    
 = 1.0.0 =  
  * Inicial release.  
+ 
+= 1.1 =  
+ * Loops related bugs fixed.
+ * More than 10 points allows per page fixed.
+ * New custom field included in order to cache the Latitude and Longitude and avoid extra Google Geocoder requests.
+ * More than one point per post fixed. 
+

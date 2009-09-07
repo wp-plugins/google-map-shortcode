@@ -1,85 +1,53 @@
 /**
- * Google map shortcode class v.1.0.0
- */
+ * Google Map Shortcode 
+ * Version: 1.1
+ * Author: Alain Gonzalez
+ * Author URI: http://web-argument.com/
+*/
  
 function gmshc_render(id,GMpointsArray,zoom) {
-
+	
 	var map = new GMap2(document.getElementById(id));
+	
 	
 	var customUI = map.getDefaultUI();
 	
 	// Remove MapType.G_HYBRID_MAP
 	customUI.maptypes.hybrid = false;
 	
-	map.setUI(customUI);
-	
-	var geocoder = new GClientGeocoder();
+	map.setUI(customUI);	
+
 	
 	this.findPoint = findPoint;
 	this.placing = placing;
-	for (var i = 0; i <= GMpointsArray.length - 1; i++){
-  
-	 	this.placing(GMpointsArray[i]);
+	
 
+	  
+	for (var i = 0; i <= GMpointsArray.length - 1; i++){
+ 
+	 	this.placing(GMpointsArray[i]);
 
 	}
 
-	 function placing (single, findpoint){
-		 
-  
-			geocoder.getLocations(single.name, 
-			      function (response) {
-    
-					  if (response && response.Status.code != 200) {
-						alert("Unable to locate " + decodeURIComponent(response.name));
-					  } else {
-						var place = response.Placemark[0];
-						
-						var point = new GLatLng(place.Point.coordinates[1],
-												place.Point.coordinates[0]);
-						map.setCenter(point, zoom);
-		
-						if (GMpointsArray.length == 1){
+	 function placing (single, showinfo){
 
-						// Set up our GMarkerOptions object
-						var baseIcon = new GIcon(baseIcon);
-						baseIcon.image = "http://maps.google.com/mapfiles/arrow.png";
-						baseIcon.shadow = "http://maps.google.com/mapfiles/arrowshadow.png";
-						baseIcon.iconSize = new GSize(39, 34);
-						baseIcon.shadowSize = new GSize(39, 34);
-						baseIcon.iconAnchor = new GPoint(9, 34);
-						baseIcon.infoWindowAnchor = new GPoint(9, 2);	  
-						  
-						markerOptions = { icon:baseIcon };
-						var marker = new GMarker(point, markerOptions);						
-                        map.addOverlay(marker);
-						
-						GEvent.addListener(marker, "click", function() {
-						map.openInfoWindowHtml(point, "<div style='padding:0 10px; width:200px''>"+place.address+"</div>");
-						});						
-                        
-						} else {
-						
-							var marker = new GMarker(point);		  
-							
-							var htmlBox = single.info;
-							var NewhtmlBox = htmlBox.replace("%address%", place.address);
-							
-							map.addOverlay(marker);
-							
-							if(findpoint){
-								
-								map.openInfoWindowHtml(point, NewhtmlBox);
-								
-							}
-							
-							GEvent.addListener(marker, "click", function() {
-								map.openInfoWindowHtml(point, NewhtmlBox);
-							});
-						
-						}
-					  }
-				  });
+          var latlng = new GLatLng(single.point.lat,single.point.long);
+		  map.setCenter(latlng, zoom);
+		  var marker = new GMarker(latlng);
+          map.addOverlay(marker);
+
+			if(showinfo){
+				
+				map.openInfoWindowHtml(latlng, single.info);
+				
+			}
+			if 	(single.info != null){
+				GEvent.addListener(marker, "click", function() {
+														 
+					map.openInfoWindowHtml(latlng, single.info);
+					
+				});
+			}
 			
 	}			  
 				  
