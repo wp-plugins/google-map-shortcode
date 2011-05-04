@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Google Map Shortcode
-Plugin URI: http://web-argument.com/2011/05/03/google-map-shortcode-2-0-total-solution/
+Plugin URI: http://web-argument.com/2011/05/04/google-map-shortcode-2-0-total-solution/
 Description: Include Google Map in your blogs with just one click. 
 Version: 2.0
 Author: Alain Gonzalez
@@ -964,7 +964,7 @@ function gmshc_options_page() {
     
     <h3 style="padding-top:30px; margin-top:30px; border-top:1px solid #CCCCCC;">Feedback</h3>
     
-    <p>For more details and examples visite the <a href="http://web-argument.com/google-map-shortcode/">Plugin Page</a>. All the comments are welcome.</p>
+    <p>For more details and examples visite the <a href="http://web-argument.com/2011/05/04/google-map-shortcode-2-0-total-solution/">Plugin Page</a>. All the comments are welcome.</p>
     
     
     <p class="submit">

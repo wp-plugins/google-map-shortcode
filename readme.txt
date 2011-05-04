@@ -1,6 +1,6 @@
 === Google Map Shortcode ===
 Contributors: Alaingg
-Donate link: http://web-argument.com/2011/05/03/google-map-shortcode-2-0-total-solution/
+Donate link: http://web-argument.com/2011/05/04/google-map-shortcode-2-0-total-solution/
 Tags: google map, shortcode, map, categories, widget, post map, point, marker, list, location, address, images
 Requires at least: 2.5
 Tested up to: 3.1.2
@@ -33,7 +33,7 @@ For more details and examples visit the <a href="http://web-argument.com/2011/05
 == Installation ==
 
 1. Upload 'Google Map Short Code' folder to the '/wp-content/plugins/' directory.
-2. Activate the plugin through the ‘Plugins’ menu in WordPress.
+2. Activate the plugin through the 'Plugins' menu in WordPress.
 3. Go to the Google Map Shortcode Options page under settings and save your prefered options.
 4. Using the Google Map editor panel button insert the address or latitude/longitude. 
 
