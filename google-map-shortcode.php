@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Google Map Shortcode
-Plugin URI: http://web-argument.com/2011/05/04/google-map-shortcode-2-0-total-solution/
+Plugin URI: http://web-argument.com/google-map-shortcode-2-0-total-solution/
 Description: Include Google Map in your blogs with just one click. 
 Version: 2.0
 Author: Alain Gonzalez

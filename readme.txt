@@ -1,6 +1,6 @@
 === Google Map Shortcode ===
 Contributors: Alaingg
-Donate link: http://web-argument.com/2011/05/04/google-map-shortcode-2-0-total-solution/
+Donate link: http://web-argument.com/google-map-shortcode-2-0-total-solution/
 Tags: google map, shortcode, map, categories, widget, post map, point, marker, list, location, address, images
 Requires at least: 2.5
 Tested up to: 3.1.2
@@ -28,7 +28,7 @@ Special Features:
 *   You can customize the html of the info window box on your maps
 *   The shortcode allows different options to customize your maps like: inicial zoom, width, height, under categories, post ID, number of points, specific address, icon
 
-For more details and examples visit the <a href="http://web-argument.com/2011/05/03/google-map-shortcode-2-0-total-solution/">plugin page</a>.
+For more details and examples visit the <a href="http://web-argument.com/google-map-shortcode-2-0-total-solution/">plugin page</a>.
 
 == Installation ==
 
