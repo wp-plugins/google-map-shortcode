@@ -4,7 +4,7 @@ Donate link: http://web-argument.com/google-map-shortcode-version-11/
 Tags: google map, shortcode, map, categories, widget, post map, point, marker, list, location
 Requires at least: 2.5
 Tested up to: 2.8
-Stable tag: 4.3
+Stable tag: 1.1
 
 Friendly integration of Google Map instances in your blogs. Allows to display multiples map on your pages. Insert points on maps using a custon field. 
 
