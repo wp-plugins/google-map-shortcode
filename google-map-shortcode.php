@@ -3,7 +3,7 @@
 Plugin Name: Google Map Shortcode
 Plugin URI: http://web-argument.com/google-map-shortcode-2-0-total-solution/
 Description: Include Google Map in your blogs with just one click. 
-Version: 2.0
+Version: 2.0.1
 Author: Alain Gonzalez
 Author URI: http://web-argument.com/
 */
@@ -17,6 +17,7 @@ define('GMSHC_VERSION','2.0');
  */
 function get_gmshc_options ($default = false){
 
+
 	$gmshc_default = array(
 							'zoom' => '10',
 							'width' => '400',
@@ -24,7 +25,7 @@ function get_gmshc_options ($default = false){
 							'number' => 50,							
 							'language' => 'en',
 							'windowhtml' => gmshc_defaul_windowhtml(),
-							'icon' => '',
+							'icon' => GMSC_PLUGIN_URL.'/images/icons/marker.png',
 							'use_icon' => 'default',
 							'default_icon' => 'marker.png',
 							'custom_icon' => '',
@@ -309,16 +310,16 @@ function gmshc_tab_process(){
  */
  function gmshc_defaul_windowhtml(){
  
-	$defaul_gmshc_windowhtml = "<div style='margin:0; padding:0px; height:110px; width:310px; overflow:hidden'>\n";
+	$defaul_gmshc_windowhtml = "<div style='margin:0; padding:0px; height:110px; width:%with%; overflow:hidden; font-size:11px; clear:both; line-height: 16px;'>\n";
 	$defaul_gmshc_windowhtml .= "<div style='float:left; width:200px'>\n";
-	$defaul_gmshc_windowhtml .= "<a class='title' href='%link%' style='clear:both; display:block'>%title%</a>\n";
-	$defaul_gmshc_windowhtml .= "<div style='font-size:11px; clear:both'><strong>%address%</strong></div>\n";
-	$defaul_gmshc_windowhtml .= "<div style='font-size:11px; clear:both; line-height:16px'>%excerpt%</div>\n";
+	$defaul_gmshc_windowhtml .= "<a class='title' href='%link%' style='clear:both; display:block; font-size:12px; line-height: 18px; font-weight:bold;'>%title%</a>\n";
+	$defaul_gmshc_windowhtml .= "<div><strong>%address%</strong></div>\n";
+	$defaul_gmshc_windowhtml .= "<div>%excerpt%</div>\n";
 	$defaul_gmshc_windowhtml .= "<a href='%link%' style='font-size:11px; float:left; display:block'>more &raquo;</a>\n";
 	$defaul_gmshc_windowhtml .= "<img src='".GMSC_PLUGIN_URL."/images/open.jpg\' style='float: right; margin-right:5px'/> \n";
 	$defaul_gmshc_windowhtml .= "<a href='%open_map%' target='_blank' style='font-size:11px; float: right; display:block;'>Open Map</a>\n";
 	$defaul_gmshc_windowhtml .= "</div>\n";
-	$defaul_gmshc_windowhtml .= "<img src='%thubnail%' style='float:left; margin:8px 0 0 8px; width:90px; height:90px'/>\n";	
+	$defaul_gmshc_windowhtml .= "<div style='float:left'>%thubnail%</div>\n";	
 	$defaul_gmshc_windowhtml .= "</div>\n";
 	
 	return $defaul_gmshc_windowhtml;
@@ -479,7 +480,6 @@ function gmshc_sc($atts) {
 		
 	if ( count($the_items) > 0 ) {
 	
-	
 	$canvas = "canvas_".wp_generate_password(4, false);
 
 	
@@ -506,12 +506,18 @@ function gmshc_sc($atts) {
 				$open_map = "http://maps.google.com/?q=".str_replace(" ","%20",$single_point['address']);
 				$point_title = isset($single_point['title'])?$single_point['title']:"";
 				$point_link = isset($single_point['link'])?$single_point['link']:"";
-				$point_img = isset($single_point['img'])?$single_point['img']:"";
+				if(isset($single_point['img'])) {
+				$point_img = "<img src='".$single_point['img']."' style='margin:8px 0 0 8px; width:90px; height:90px'/>";
+				$html_with = "310px";
+				} else {
+				$point_img = "";
+				$html_with = "auto";
+				}
 				$point_excerpt = isset($single_point['excerpt'])?$single_point['excerpt']:"";
 				
 				
-				$find = array("\f","\v","\t","\r","\n","\\","\"","%title%","%link%","%thubnail%", "%excerpt%","%address%","%open_map%");
-				$replace  = array("","","","","","","'",$point_title,$point_link,$point_img,$point_excerpt,$single_point['address'],$open_map);
+				$find = array("\f","\v","\t","\r","\n","\\","\"","%title%","%link%","%thubnail%", "%excerpt%","%address%","%open_map%","%with%");
+				$replace  = array("","","","","","","'",$point_title,$point_link,$point_img,$point_excerpt,$single_point['address'],$open_map,$html_with);
 				
 				$info = str_replace( $find,$replace, $windowhtml);
 			
@@ -895,7 +901,11 @@ function gmshc_options_page() {
       <tr>
         <td align="right"><strong>%open_map%</strong></td>
         <td><?php _e("Open this point on Google Map") ?></td>
-      </tr>      
+      </tr> 
+      <tr>
+        <td align="right"><strong>%width%</strong></td>
+        <td><?php _e("Info Html width") ?></td>
+      </tr>           
     </table>
     <br />
     
@@ -924,47 +934,47 @@ function gmshc_options_page() {
     </p>
     
     <h3 style="padding-top:30px; margin-top:30px; border-top:1px solid #CCCCCC;">Use</h3>
-    <p>You can include a Google Map Shortcode everywhere</p>
+    <p><?php _e("You can include a Google Map Shortcode everywhere") ?></p>
     
-    <p>In your post using: <strong>[google-map-sc option = "option value"]</strong></p>
-    <p>In your theme files using: <strong> < ?php echo do_shortcode [google-map-sc option = "option value"] ? ></strong></p>
+    <p><?php _e("In your post using: ") ?><strong>[google-map-sc option = "option value"]</strong></p>
+    <p><?php _e("In your theme files using: ") ?><strong>  echo do_shortcode ('[google-map-sc option = "option value"]') </strong></p>
     
     <h3 style="padding-top:30px; margin-top:30px; border-top:1px solid #CCCCCC;">Options</h3>
     
     <table width="80%%" border="0" cellspacing="10" cellpadding="0">
       <tr>
-        <td width="150"><div align="right"><strong>address</strong></div></td>
-        <td>Specific address</td>
+        <td width="150"><div align="right"><strong><?php _e("address") ?></strong></div></td>
+        <td><?php _e("Specific address") ?></td>
       </tr>
       <tr>
         <td><div align="right"><strong>id</strong></div></td>
-        <td>Specific post ID</td>
+        <td><?php _e("Specific post ID") ?></td>
       </tr>
       <tr>
-        <td><div align="right"><strong>cat</strong></div></td>
-        <td>Include post under this categories. (category number separated by comma)</td>
+        <td><div align="right"><strong><?php _e("cat") ?></strong></div></td>
+        <td><?php _e("Include post under this categories. (category number separated by comma)") ?></td>
       </tr>
       <tr>
-        <td><div align="right"><strong>number</strong></div></td>
-        <td>Number of points/post on your map (Default 10)</td>
+        <td><div align="right"><strong><?php _e("number") ?></strong></div></td>
+        <td><?php _e("Number of points/post on your map (Default 10)") ?></td>
       </tr>
       <tr>
-        <td><div align="right"><strong>zoom</strong></div></td>
-        <td>Inicial zoom (Default 10)</td>
+        <td><div align="right"><strong><?php _e("zoom") ?></strong></div></td>
+        <td><?php _e("Inicial zoom (Default 10)") ?></td>
       </tr>
       <tr>
-        <td><div align="right"><strong>width</strong></div></td>
-        <td>Width of your map</td>
+        <td><div align="right"><strong>width") ?></strong></div></td>
+        <td><?php _e("Width of your map") ?></td>
       </tr> 
       <tr>
-        <td><div align="right"><strong>height</strong></div></td>
-        <td>Height of your map</td>
+        <td><div align="right"><strong><?php _e("height") ?></strong></div></td>
+        <td><?php _e("Height of your map") ?></td>
       </tr>        
     </table>
     
     <h3 style="padding-top:30px; margin-top:30px; border-top:1px solid #CCCCCC;">Feedback</h3>
     
-    <p>For more details and examples visite the <a href="http://web-argument.com/2011/05/04/google-map-shortcode-2-0-total-solution/">Plugin Page</a>. All the comments are welcome.</p>
+    <p><?php _e('For more details and examples visite the <a href="http://web-argument.com/2011/05/04/google-map-shortcode-2-0-total-solution/">Plugin Page</a>. All the comments are welcome.') ?></p>
     
     
     <p class="submit">
@@ -999,48 +1009,75 @@ function gmshc_options_page() {
 <?php } 
 
 function gmshc_point ($address,$ltlg){
-
-	if (!empty($ltlg)) $query = $ltlg;
-	else if (!empty($address)) { 
+//http://code.google.com/apis/maps/documentation/geocoding/
+	
+	$formatted_address = "";
+	$point = "";
+	$response = false;
+	
+	if (!empty($ltlg)) {
+		$query = $ltlg;
+		$type = "latlng";
+	} else if (!empty($address)) { 
 	
 		$find = array("\n","\r"," ");
 		$replace = array("","","+");					
 		$address = str_replace( $find,$replace, $address);
 			
 		$query = $address;
+		$type = "address";
 	}
 	else return false;	
 
-	$gmshc_key = get_option('gmshc_key');
-	
-	$url = 'http://maps.google.com/maps/geo?q='.$query.'&key='.$gmshc_key.'&sensor=false&output=xml&oe=utf8';
-	
-	$response = gmshc_xml2array($url);
-	
-	if (isset($response['kml']['Response']['Placemark']['Point'])) {
-	
-		$coordinates = $response['kml']['Response']['Placemark']['Point']['coordinates'];
-		$address = $response['kml']['Response']['Placemark']['address'];
+	if(function_exists('json_decode')){
+	    
+		$options = get_gmshc_options();
+		$api_url = "http://maps.googleapis.com/maps/api/geocode/json?".$type."=".$query."&sensor=false&language=".$options['language'];
+
+		$json_answ = file_get_contents($api_url);
+		$answ_arr = json_decode($json_answ,true);
 		
-		if (!empty($coordinates)) {
-		
-		$point_array = split(",",$coordinates);
-		
-		$point = $point_array[1].",".$point_array[0];
-		
-		$response = array('point'=>$point,'address'=>$address);
-		
-		return  $response;
-		
+		if (isset($answ_arr["status"]) && $answ_arr["status"] == "OK"){		
+			$formatted_address = $answ_arr["results"]["0"]["formatted_address"];
+			$point = $answ_arr["results"]["0"]["geometry"]["location"]["lat"].",".$answ_arr["results"]["0"]["geometry"]["location"]["lng"];
 		}
-	
-	} else {
-	
-	return  false;
-	
+			
+	} else {		
+		
+		$gmshc_key = get_option('gmshc_key');
+		
+		$url = 'http://maps.google.com/maps/geo?q='.$query.'&key='.$gmshc_key.'&sensor=false&output=xml&oe=utf8';
+		
+		$response = gmshc_xml2array($url);
+		
+		if (isset($response['kml']['Response']['Placemark']['Point'])) {
+		
+			$coordinates = $response['kml']['Response']['Placemark']['Point']['coordinates'];
+			$formatted_address = $response['kml']['Response']['Placemark']['address'];
+			
+			if (!empty($coordinates)) {
+			
+				$point_array = split(",",$coordinates);
+				
+				$point = $point_array[1].",".$point_array[0];			
+			
+			}
+		
+		} 		
+		
 	}
+	
+	if (!empty($point) && !empty($formatted_address)){
+	
+		$response = array('point'=>$point,'address'=>$formatted_address);
+		
+	}
+	
+	return $response;	
 
 }
+
+
 
 //from http://us3.php.net/manual/en/function.xml-parse.php
 function gmshc_xml2array($url, $get_attributes = 1, $priority = 'tag')
