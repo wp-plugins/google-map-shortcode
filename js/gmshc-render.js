@@ -1,6 +1,6 @@
 /**
  * Google Map Shortcode 
- * Version: 2.0
+ * Version: 2.1
  * Author: Alain Gonzalez
  * Author URI: http://web-argument.com/
 */
@@ -9,7 +9,7 @@ function gmshc_render(id,GMpointsArray,zoom) {
 	
   var myOptions = {
     zoom: zoom,
-    center: new google.maps.LatLng(GMpointsArray[0].point.lat,GMpointsArray[0].point.long),
+    center: new google.maps.LatLng(GMpointsArray[0].lat,GMpointsArray[0].long),
     mapTypeId: google.maps.MapTypeId.ROADMAP
   }
   var map = new google.maps.Map(document.getElementById(id),myOptions);
@@ -20,17 +20,17 @@ function gmshc_render(id,GMpointsArray,zoom) {
 
 function gmshc_placing (map, locations){
 	 
-	var infowindow;
+	//var infowindow;
 
 	for (var i = 0; i < locations.length; i++){		
    
 		var location = locations[i];
 	 
 		   var marker = new google.maps.Marker({
-						position: new google.maps.LatLng(location.point.lat, location.point.long),
-						map: map,
-						icon: new google.maps.MarkerImage(location.icon),
-						title:location.address
+												position: new google.maps.LatLng(location.lat, location.long),
+												map: map,
+												icon: new google.maps.MarkerImage(location.icon),
+												title:location.address
 			});
 		
 

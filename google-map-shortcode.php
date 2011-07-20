@@ -3,14 +3,18 @@
 Plugin Name: Google Map Shortcode
 Plugin URI: http://web-argument.com/google-map-shortcode-2-0-total-solution/
 Description: Include Google Map in your blogs with just one click. 
-Version: 2.0.1
+Version: 2.1
 Author: Alain Gonzalez
 Author URI: http://web-argument.com/
 */
 
 define('GMSC_PLUGIN_DIR', WP_PLUGIN_DIR."/".dirname(plugin_basename(__FILE__)));
 define('GMSC_PLUGIN_URL', WP_PLUGIN_URL."/".dirname(plugin_basename(__FILE__)));
-define('GMSHC_VERSION','2.0');
+define('GMSHC_VERSION_CHECK','2.1');
+
+require(GMSC_PLUGIN_DIR."/include/functions.php");
+require(GMSC_PLUGIN_DIR."/include/class.gmshc_point.php");
+require(GMSC_PLUGIN_DIR."/include/class.gmshc_post_points.php");
 
 /**
  * Default Options
@@ -20,18 +24,15 @@ function get_gmshc_options ($default = false){
 
 	$gmshc_default = array(
 							'zoom' => '10',
-							'width' => '400',
-							'height' => '400',
-							'number' => 50,							
+							'width' => '450',
+							'height' => '450',		
 							'language' => 'en',
 							'windowhtml' => gmshc_defaul_windowhtml(),
-							'icon' => GMSC_PLUGIN_URL.'/images/icons/marker.png',
-							'use_icon' => 'default',
-							'default_icon' => 'marker.png',
-							'custom_icon' => '',
-							'version' => GMSHC_VERSION
+							'icons' => array(),
+							'default_icon' => GMSC_PLUGIN_URL.'/images/icons/marker.png',
+							'version' => '2.1'
 							);
-
+							
     	
 	if ($default) {
 	update_option('gmshc_op', $gmshc_default);
@@ -41,7 +42,7 @@ function get_gmshc_options ($default = false){
 	$options = get_option('gmshc_op');
 	if (isset($options)){
 	    if (isset($options['version'])) {	
-			$chk_version = version_compare(GMSHC_VERSION,$options['version']);
+			$chk_version = version_compare(GMSHC_VERSION_CHECK,$options['version']);
 			if ($chk_version == 0) 	return $options;
 			else if ($chk_version > 0) $options = $gmshc_default;
         } else {
@@ -60,24 +61,20 @@ function gmshc_head() {
 
 	$options = get_gmshc_options();
 	$language = $options['language'];
-	$key = get_option('gmshc_key');
 	
-	$gmshc_header =  "\n<!-- Google Map Shortcode Version ".GMSHC_VERSION."-->\n";		
+	$gmshc_header =  "\n<!-- Google Map Shortcode Version ".GMSHC_VERSION_CHECK."-->\n";		
 	$gmshc_header .= "<script src=\"http://maps.google.com/maps/api/js?sensor=false";
-	if(isset($key)) 
-	$gmshc_header .= "&key=".$key;
 	if(isset($language)) 
 	$gmshc_header .= "&language=".$language;
 	$gmshc_header .="\" type=\"text/javascript\"></script>\n"; 
-	$gmshc_header .= "<script type=\"text/javascript\" src=\"".GMSC_PLUGIN_URL."/google-map-sc-v3.js\"></script>\n";	
-	$gmshc_header .=  "<!-- /Google Map Shortcode Version ".GMSHC_VERSION."-->\n";		
+	$gmshc_header .= "<script type=\"text/javascript\" src=\"".GMSC_PLUGIN_URL."/js/gmshc-render.js\"></script>\n";	
+	$gmshc_header .=  "\n<!-- /Google Map Shortcode Version ".$options['version']."-->\n";		
 		
 	print($gmshc_header);
 
 }
 
 add_action('wp_head', 'gmshc_head');
-
 
 /**
  * Google Map SC Editor Button
@@ -106,9 +103,15 @@ function gmshc_tab_process(){
 	$options = get_gmshc_options();	
 
 	$post_id = $_REQUEST["post_id"];
-	$custum_fieds = get_post_custom($post_id);
-	$points_addr = isset($custum_fieds['google-map-sc-address'])?$custum_fieds['google-map-sc-address'] : array();
-	$points_ltlg = isset($custum_fieds['google-map-sc-latlng'])?$custum_fieds['google-map-sc-latlng'] : array();
+	$custom_fieds = get_post_custom($post_id);
+	
+	$address = isset($_REQUEST['new_address'])?$_REQUEST['new_address'] : "";
+	$ltlg = isset($_REQUEST['new_ltlg'])?$_REQUEST['new_ltlg'] : "";
+	$title = isset($_REQUEST['new_title'])?$_REQUEST['new_title'] : get_the_title($post_id);
+	$description = isset($_REQUEST['new_description'])?$_REQUEST['new_description'] : "";
+	$icon = isset($_REQUEST['default_icon'])?$_REQUEST['default_icon'] : "";
+	$selected_thumbnail = isset($_REQUEST['selected_thumbnail'])?$_REQUEST['selected_thumbnail'] : "";
+
 	$add_point = isset($_REQUEST['add_point']) ? $_REQUEST['add_point'] : '';
 	$del_point = isset($_REQUEST['delp']) ? $_REQUEST['delp'] : '';
 	$update_point = isset($_REQUEST['update']) ? $_REQUEST['update'] : '';
@@ -116,65 +119,46 @@ function gmshc_tab_process(){
 	$height = isset($_REQUEST['height']) ? $_REQUEST['height'] : $options['height'];
 	$zoom = isset($_REQUEST['zoom']) ? $_REQUEST['zoom'] : $options['zoom'];
 	
-	if (!empty($add_point)) {
+	$address_list = isset($_REQUEST['addr']) ? $_REQUEST['addr'] : "";
+	$title_list = isset($_REQUEST['title']) ? $_REQUEST['title'] : "";	
+	$desc_list = isset($_REQUEST['desc']) ? $_REQUEST['desc'] : "";	
+	$ltlg_list = isset($_REQUEST['ltlg']) ? $_REQUEST['ltlg'] : "";	
+	$icon_list = isset($_REQUEST['icon']) ? $_REQUEST['icon'] : "";	
+	$thumb_list = isset($_REQUEST['thumb']) ? $_REQUEST['thumb'] : "";
 	
-		if (isset($_REQUEST['full_address'])){
-			if ($gmshc_point = gmshc_point ($_REQUEST['full_address'],"")) {
-	
-					add_post_meta($post_id , "google-map-sc-address", $gmshc_point['address'], false);
-					add_post_meta($post_id , "google-map-sc-latlng", $gmshc_point['point'], false);
-				
-			} else {
-			
-			echo "<div class='error'><p>".__("The Address can't be located.")."</p></div>";
-			
+    $post_points = new GMSHC_Post_Map();
+	$post_points -> create_post_map($post_id);
+
+	if (!empty($add_point)) {	        		
+			$new_point = new GMSHC_Point();
+	        if($new_point -> create_point($address,"",$title,$description,$icon,$selected_thumbnail,$post_id)){
+				$post_points -> add_point($new_point);
 			}
-		}
-	
+			else 
+				echo "<div class='error'><p>".__("The Address can't be located.")."</p></div>";
 	}
 
-	if ($del_point != '') {
+	else if (!empty($update_point)) {
 	
-		foreach ($points_addr as $id => $single_addr) {
-		
-			if ($del_point == $id) delete_post_meta($post_id, "google-map-sc-address", $single_addr);
-			
-		}
-			
-		foreach ($points_ltlg as $id => $single_ltlg) {
-			if ($del_point == $id) delete_post_meta($post_id, "google-map-sc-latlng", $single_ltlg);
-		
-		}
-		
+		if ( $post_points -> update_points($address_list,$ltlg_list,$title_list,$desc_list,$icon_list,$thumb_list,$post_id))
+			echo "<div class='updated'><p>".__("The Point was updated.")."</p></div>";
+	    else echo "<div class='error'><p>".__("The Points can't be updated.")."</p></div>";
+	}
+	
+	else if ($del_point != "") {
+		if($post_points -> delete_point($del_point))		
 		echo "<div class='updated'><p>".__("The Point was deleted.")."</p></div>";
-	
-	}
+	}	
 
-	if (!empty($update_point)) {
-	
-		$posted_addr = $_REQUEST['addr']; 
-		$posted_ltlg = $_REQUEST['ltlg'];
-		
-		for ($j = 0; $j < count($posted_ltlg); $j++ ) {
-				
-				update_post_meta($post_id, "google-map-sc-address", $posted_addr[$j], $points_addr[$j]);
-	
-				update_post_meta($post_id, "google-map-sc-latlng", $posted_ltlg[$j], $points_ltlg[$j]);
-				
-		}
-		
-		echo "<div class='updated'><p>".__("The Point was updated.")."</p></div>";
-	}
-
-	$custum_fieds = get_post_custom($post_id);
-	$points_addr = isset($custum_fieds['google-map-sc-address'])?$custum_fieds['google-map-sc-address'] : array();
-	$points_ltlg = isset($custum_fieds['google-map-sc-latlng'])?$custum_fieds['google-map-sc-latlng'] : array();
-	
 	?>
-    <div style="width:620px; margin:10px auto">
+    
+    <script type="text/javascript" src="<?php echo GMSC_PLUGIN_URL ?>/js/gmshc-admin.js"></script>
+    <link href="<?php echo GMSC_PLUGIN_URL ?>/styles/gmshc-admin-styles.css" rel="stylesheet" type="text/css"/>
+    
+        <div style="width:620px; margin:10px auto">
     
         <form  action="#" method="post">
-        
+           <textarea name = "post_data" id="post_data" style="display:none"><?php echo $post_points->post_data ?></textarea>
            <table width="620" border="0" cellspacing="10" cellpadding="10">
             <tr>
                 <td colspan="2">
@@ -197,126 +181,154 @@ function gmshc_tab_process(){
                 <td colspan="2">
                 <h3><?php _e("Add New Point"); ?></h3>
                 </td>
-           </tr>        
+           </tr>  
             <tr>
                 <td align="right" valign="top">
-                <?php _e("Full Address"); ?>
+                <strong><?php _e("Title"); ?></strong>
                 </td>
-            <td valign="top">    
-            <textarea name="full_address" cols="50" rows="4" id="full_address"></textarea>
-            </td>
-            </tr>      
-            </table>	
-                
+				<td valign="top">    
+				<input name="new_title"  size="55" id="new_title" value="<?php echo $title ?>" />
+				</td>
+            </tr> 
+            <tr>
+                <td align="right" valign="top">
+                <strong><?php _e("Description"); ?></strong>
+                </td>
+				<td valign="top">    
+				<textarea name="new_description" cols="50" rows="2" id="new_description"></textarea>
+				</td>
+            </tr> 			
+            <tr>
+                <td align="right" valign="top">
+                <strong><?php _e("Full Address"); ?></strong>
+                </td>
+				<td valign="top">    
+				<textarea name="new_address" cols="50" rows="2" id="new_address"></textarea>
+				</td>
+            </tr> 
+            <tr>
+				<td align="right" valign="top" colspan="2">
+					<?php gmshc_deploy_icons() ?>
+				</td>
+            </tr> 
+            <tr>
+				<td align="center" valign="top" colspan="2">
+                	<?php 
+					$thumbnail_list = gmshc_all_post_thumb($post_id);
+					if (count($thumbnail_list) > 0) { 
+					?>
+                        <div class="gmshc_label">
+                            <strong><?php _e("Thumbnail: "); ?></strong><?php _e("Select by clicking on the images"); ?>
+                        </div>
+                        <div id="gmshc_thumb_cont">
+                        <input type="hidden" name="selected_thumbnail" value="<?php echo $default_icon ?>" id="selected_thumbnail" />
+                        <?php foreach ($thumbnail_list as $thumbnail) { ?>
+                            <div class="gmshc_thumb">
+                                <img src="<?php echo $thumbnail ?>" width="40" height="40" />
+                            </div>
+                        <?php  } ?>
+                        </div>
+					<?php } else { ?>
+                        <div class="gmshc_label">
+                            <strong><?php _e("Thumbnail: "); ?></strong><?php _e("If you want to attach an image to the point you need to upload it first to the post gallery"); ?>
+                        </div> 
+                    <?php  } ?>                   
+				</td>
+            </tr>             			
+            </table>
+   
         	<p><input class="button" value="<?php _e("Add Point") ?>" name="add_point" type="submit"></p>
             
 			<?php
-            if (count($points_addr) > 0 || count($points_ltlg) > 0 ){
+            if ( count($post_points -> points) > 0 ){
             ?>
-                    
+     
             <table class="widefat" cellspacing="0">
                 <thead>
                 <tr>
-                <th><?php _e("Address"); ?></th>
-                <th><?php _e("Latitude/Longitude"); ?></th>		
+                <th><?php _e("Marker"); ?></th>
+                <th><?php _e("Thumbnail"); ?></th>
+                <th><?php _e("Title/Description"); ?></th>
+                <th><?php _e("Address/LtLg"); ?></th>
                 </tr>
                 </thead>
-                <tbody class="media-item-info">
-                    <?php 
-                    $i = 0;
-                    while ($i < count($points_addr) || $i < count($points_ltlg)) {
-					if (!isset( $points_ltlg[$i]) ){
-						$this_ltlg = gmshc_point ($points_addr[$i],"");
-						$points_ltlg[$i] = $this_ltlg['point'];
-						update_post_meta($post_id, "google-map-sc-latlng", $points_ltlg[$i], "");
-					} 	
-					if (!isset( $points_addr[$i]) ){
-						$this_addr = gmshc_point ("",$points_ltlg[$i]);
-						$points_addr[$i] = $this_addr['address'];
-						update_post_meta($post_id, "google-map-sc-address", $points_addr[$i], "");
-					} 					
-                    ?>            
+                <tbody class="media-item-info">   
+                
+                <?php 
+				$i = 0;
+				foreach ($post_points->points as $point ) {				 
+				?>                     
                     <tr>
-                        <td>
-                        <textarea name="addr[]" cols="30" rows="3" id="addr_<?php echo $i ?>"><?php echo $points_addr[$i] ?></textarea>
-                        </td>
-                        <td> 
-                        <input name="ltlg[]" type="text" id="ltlg_<?php echo $i ?>" size="30" value = "<?php echo $points_ltlg[$i] ?>"/>
-                        <div style="padding:15px 0;">
+                      <td>
+                      	<img src="<?php echo $point->icon ?>" atl="<?php _e("Icon") ?>" />
+                        <input name="icon[]" type="hidden" id="icon_<?php echo $i ?>" size="30" value = "<?php echo $point->icon ?>"/>
+                      </td>                    
+                      <td>
+                      	<div class="gmshc_thumb gmshc_selected">
+                        <?php if ($point->thumbnail != "") { ?>						       
+                      	<img src="<?php echo $point->thumbnail ?>" atl="<?php _e("Thumbnail") ?>" width = "40" height="40" />
+                        <input name="thumb[]" type="hidden" id="thumb_<?php echo $i ?>" size="30" value = "<?php echo $point->thumbnail ?>"/> 
+                         <?php } ?>
+                         </div>                  
+                      </td>
+                      <td>
+						<input name="title[]" type="text" id="title_<?php echo $i ?>" size="40" value = "<?php echo $point->title ?>"/>
+                        <textarea name="desc[]" cols="40" rows="2" id="desc_<?php echo $i ?>"><?php echo $point->description ?></textarea>							
+                      </td>
+                      <td>
+						<input name="ltlg[]" type="hidden" id="ltlg_<?php echo $i ?>" size="30" value = "<?php echo $point->ltlg ?>"/>
+                        <textarea name="addr[]" cols="30" rows="2" id="addr_<?php echo $i ?>" style="display:none"><?php echo $point->address ?></textarea>
+                        <p><?php echo $point->address ?></p>	
+                        <div>
                         <input class="button" value="<?php _e("Update"); ?>" name="update" type="submit"> 
-                        <a href="" class="thickbox" onclick="delete_point(<?php echo $i ?>); return false"><?php _e("Delete"); ?></a>
+                        <a href="?post_id=<?php echo $post_id ?>&tab=gmshc&delp=<?php echo $i ?>" class="delete_point" onclick="if(confirm('<?php _e("You will not be able to roll back deletion. Are you sure?") ?>')) return true; else return false"><?php _e("Delete"); ?></a>
                         </div>
-                        </td>
-                    </tr>	
-                    <?php  	
-                    $i ++;
-                    }
-                    ?>           
+                      </td>
+                    </tr>
+                 <?php 
+				 	$i++;
+				}
+				?>          
                 </tbody> 	    
             </table>
         
-        	<p><input class="button-primary" value="<?php _e("Insert Map"); ?>" type="button" onclick="add_map(); return false;"></p>
+   	    <p><input class="button-primary" value="<?php _e("Insert Map"); ?>" type="button" id="insert_map"></p>
         
-			<?php } ?>
+			<?php  } ?>
 		</form>
 	</div>
 
-
-	<script type="text/javascript">
-    
-    function add_map (){
-        var width = jQuery("#width").val();
-        var height = jQuery("#height").val();
-        var zoom = jQuery("#zoom").val();
-        
-        str = "[google-map-sc";
-		if (width != '')
-		str += " width="+width;
-		if (height != '')
-		str += " height="+height;
-		if (zoom != '')
-		str += " zoom="+zoom;				
-		str +="]"; 
-        
-        if (parent.tinyMCE){
-            parent.tinyMCE.activeEditor.setContent(parent.tinyMCE.activeEditor.getContent() + str);
-        }else{
-            parent.document.getElementById("content").value = parent.document.getElementById("content").value + "\r\n" +str;
-        }
-    }
-    
-    function delete_point(id){
-        var answer = confirm ('<?php _e("You will not be able to roll back deletion. Are you sure?"); ?>');
-        if (answer) {
-        var width = jQuery("#width").val();
-        var height = jQuery("#height").val();
-        var zoom = jQuery("#zoom").val();
-        
-        var url = "?post_id=<?php echo $post_id ?>&tab=gmshc&delp="+id+"&width="+width+"&height="+height+"&zoom="+zoom;
-        window.location = url;
-        } else {
-        return false;
-        }	
-    }
-    
-    </script>
-
+   
 <?php
 }
 
-
 /**
  * Default Open Window Html
+ *
+ * Allows a plugin to replace the html that would otherwise be returned. The
+ * filter is 'gmshc_get_windowhtml' and passes the point.
+
+ * add_filter('gmshc_defaul_windowhtml','default_html',1,2);
+ * 
+ * function default_html($windowhtml,$point){
+ * 	return "this is the address".$point->address;
+ * } 
  */
  function gmshc_defaul_windowhtml(){
+    
+	$defaul_gmshc_windowhtml = "";
+	$output = apply_filters('gmshc_defaul_windowhtml',$defaul_gmshc_windowhtml);
+
+	if ( $output != '' )
+		return $output;		 
  
-	$defaul_gmshc_windowhtml = "<div style='margin:0; padding:0px; height:110px; width:%with%; overflow:hidden; font-size:11px; clear:both; line-height: 16px;'>\n";
+	$defaul_gmshc_windowhtml = "<div style='margin:0; padding:0px; height:110px; width:%width%; overflow:hidden; font-size:11px; clear:both; line-height:13px;'>\n";
 	$defaul_gmshc_windowhtml .= "<div style='float:left; width:200px'>\n";
 	$defaul_gmshc_windowhtml .= "<a class='title' href='%link%' style='clear:both; display:block; font-size:12px; line-height: 18px; font-weight:bold;'>%title%</a>\n";
-	$defaul_gmshc_windowhtml .= "<div><strong>%address%</strong></div>\n";
-	$defaul_gmshc_windowhtml .= "<div>%excerpt%</div>\n";
+	$defaul_gmshc_windowhtml .= "<div><strong style='font-size:9px'>%address%</strong></div>\n";
+	$defaul_gmshc_windowhtml .= "<div style='font-size:10px'>%description%</div>\n";
 	$defaul_gmshc_windowhtml .= "<a href='%link%' style='font-size:11px; float:left; display:block'>more &raquo;</a>\n";
-	$defaul_gmshc_windowhtml .= "<img src='".GMSC_PLUGIN_URL."/images/open.jpg\' style='float: right; margin-right:5px'/> \n";
+	$defaul_gmshc_windowhtml .= "<img src='".GMSC_PLUGIN_URL."/images/open.jpg' style='float: right; margin-right:5px'/> \n";
 	$defaul_gmshc_windowhtml .= "<a href='%open_map%' target='_blank' style='font-size:11px; float: right; display:block;'>Open Map</a>\n";
 	$defaul_gmshc_windowhtml .= "</div>\n";
 	$defaul_gmshc_windowhtml .= "<div style='float:left'>%thubnail%</div>\n";	
@@ -324,34 +336,6 @@ function gmshc_tab_process(){
 	
 	return $defaul_gmshc_windowhtml;
 
-}
-
-
-/**
- * Get the thumbnail
- */
-function gmshc_post_thumb($the_parent){
-	
-	if( function_exists('has_post_thumbnail') && has_post_thumbnail($the_parent)) {
-	    $thumbnail_id = get_post_thumbnail_id( $the_parent );
-		if(!empty($thumbnail_id))
-		$img = wp_get_attachment_image_src( $thumbnail_id, 'thumbnail' );	
-	} else {
-	$attachments = get_children( array(
-										'post_parent' => $the_parent, 
-										'post_type' => 'attachment', 
-										'post_mime_type' => 'image',
-										'orderby' => 'menu_order', 
-										'order' => 'ASC', 
-										'numberposts' => 1) );
-	if($attachments == true) :
-		foreach($attachments as $id => $attachment) :
-			$img = wp_get_attachment_image_src($id, 'thumbnail');			
-		endforeach;		
-	endif;
-	}
-	if (isset($img[0])) return $img[0];
- 
 }
 
 /**
@@ -368,8 +352,7 @@ function gmshc_sc($atts) {
 	$width = $options['width'];
 	$height = $options['height']; 
 	$zoom = $options['zoom']; 
-	$number = $options['number'];
-	$icon = $options['icon'];
+	$icon = $options['default_icon'];
 	$language = $options['language'];	
 
 	// First Point in the post
@@ -378,278 +361,75 @@ function gmshc_sc($atts) {
 	
 	$the_address = isset($address_meta[0]) ? $address_meta[0] : '';
 	$point = isset($point_meta[0]) ? $point_meta[0] : '';
-	$the_items = array();
+	$the_items = array();	
 	
 	extract(shortcode_atts(array(
-		'address' => '',	
+		'address' => '',
+		'title' =>'',
+		'description' => '',
+		'icon' => $icon,
+		'thumbnail' => '',	
 		'id' => '',
 		'cat' => '',
-		'number' => $number,
 		'zoom' => $zoom,
 		'width' => $width,
-		'height' => $height,
-		'icon' => $icon,
+		'height' => $height,		
 		'language' => $language	
 	), $atts));
 
+	$map_points = array();
 
-// When address is set
- if (!empty($address)) {
- 
-		 if( $item = gmshc_fill_item('','',$address) ) {
-		 $the_items[0] = $item; 
-		 } else {	 	
-			return __("The Address can't be located.");
-		 } 
- // When id is set
- } else if (!empty($id)) {
-
-    $post_obj = get_posts(array('include'=>$id,'numberposts'=>1));
-
-	if(isset($post_obj)) {
-	 
-		if ($post_points = gmshc_retrive_point($post_obj[0])){
-		
-			for ($i = 0; $i < count($post_points); $i++) {
-			     
-				 if ($i == $number) break;
-				 
-				 if($item = gmshc_fill_item($post_obj[0], $post_points[$i]['point'],$post_points[$i]['address'])) {
-				 $the_items[$i] = $item; 
-				 }
-
+	// When address is set
+	 if (!empty($address)) {
 			 
-			}		
-		
-		}	   
+		//create single point object id = -1
+		$new_point = new GMSHC_Point();	
+		if($new_point -> create_point($address,"",$title,$description,$icon,$thumbnail,-1)) $map_points[0]=$new_point;	
 	
-	}
-	 
-} else if ($cat != '') {
-
-	$categories = split (",",$cat); 
-	$j = 0;
-	
-	$post_obj = get_posts(array('category__in'=>$categories,'numberposts'=>-1));
-
-	foreach ($post_obj as $post_item) {
-	
-
-		if ($j < $number) {
-		
-			if ($post_points = gmshc_retrive_point($post_item)){
-			
-				for ($i = 0; $i < count($post_points); $i++) {
-					 
-					 if ($i == $number) break;
-					 
-					 if($item = gmshc_fill_item($post_item, $post_points[$i]['point'],$post_points[$i]['address'])) {
-					 $the_items[$j] = $item; 
-					 $j++;
-	                 } 
-				 
-				}		
-			
-			}
-			
-				  										
-		
-		}
-	
-	}			
-			
-
- }  else {
-
-	if ($post_points = gmshc_retrive_point($post)){
-	
-		for ($i = 0; $i < count($post_points); $i++) {
-			 
-			 if ($i == $number) break;
-			 
-			 if( $item = gmshc_fill_item($post, $post_points[$i]['point'],$post_points[$i]['address']) ) {
-			 	$the_items[$i] = $item; 
-             }
+	 // When id is set
+	 } else if (!empty($id)) {
+		$post_points = new GMSHC_Post_Map();
+		$post_points -> create_post_map($id);
+		if (count($post_points -> points) > 0) $map_points = $post_points->points;	
 		 
-		}		
+	} else if ($cat != '') {
 	
-	}
-
-}
-
+		$categories = split (",",$cat); 
+		$j = 0;
 		
-	if ( count($the_items) > 0 ) {
-	
-	$canvas = "canvas_".wp_generate_password(4, false);
-
-	
-	$i = 0;
-
-	
-		$output ='<div id="'.$canvas.'" class = "gmsc" style="width:'.$width.'px; height:'.$height.'px; margin:10px auto"></div>';
-		$output .= "<script type=\"text/javascript\">\n";
-			
-		$output .= "var map_".$canvas.";\n";		
-		$output .= "var map_points_".$canvas." =  new Array();\n";
-					
-		foreach ($the_items as $single_point){
-
-			$options = get_option('gmshc_op');
-			$windowhtml = $options['windowhtml'];
-			
-			list($lat, $long) = split(",",$single_point['point']);
-			
-			if (isset($single_point['address'])) {
-
-				if (empty($windowhtml)) $windowhtml = gmshc_defaul_windowhtml();
-
-				$open_map = "http://maps.google.com/?q=".str_replace(" ","%20",$single_point['address']);
-				$point_title = isset($single_point['title'])?$single_point['title']:"";
-				$point_link = isset($single_point['link'])?$single_point['link']:"";
-				if(isset($single_point['img'])) {
-				$point_img = "<img src='".$single_point['img']."' style='margin:8px 0 0 8px; width:90px; height:90px'/>";
-				$html_with = "310px";
-				} else {
-				$point_img = "";
-				$html_with = "auto";
-				}
-				$point_excerpt = isset($single_point['excerpt'])?$single_point['excerpt']:"";
-				
-				
-				$find = array("\f","\v","\t","\r","\n","\\","\"","%title%","%link%","%thubnail%", "%excerpt%","%address%","%open_map%","%with%");
-				$replace  = array("","","","","","","'",$point_title,$point_link,$point_img,$point_excerpt,$single_point['address'],$open_map,$html_with);
-				
-				$info = str_replace( $find,$replace, $windowhtml);
-			
-		         //open map
-			
-				$output .= "map_points_".$canvas."[".$i."] = {\"address\":\"".$single_point['address']."\",\"point\":{\"lat\":\"".$lat."\",\"long\":\"".$long."\"},\"info\":\"".$info."\",\"icon\":\"".$icon."\"};\n";
-			
-			}	else {
-			
-				$output .= "map_points_".$canvas."[".$i."] = {\"address\":\"".$single_point['address']."\",\"point\":{\"lat\":\"".$lat."\",\"long\":\"".$long."\"},\"icon\":\"".$icon."\"};\n";
-			
-			}	
-		
-			$i ++;
-		}
-		
-		$output .= "addLoadEvent(function(){\n";
-		$output .= "gmshc_render(\"".$canvas."\",map_points_".$canvas.", ".$zoom.");\n";	
-		$output .= "});\n";
-		$output .= "</script>\n";	
-					
-		
-		return $output;	
-	
-	
-} 
-
-	else return __("There is not points to locate on the map");
-
-
-}
-
-
-function gmshc_get_excerpt($text) { // Fakes an excerpt if needed
-
-	if ( '' != $text ) {
-
-		$text = strip_shortcodes( $text ); 
-		
-		$text = apply_filters('the_content', $text);
-		$text = str_replace(']]>', ']]&gt;', $text);
-		$text = strip_tags($text);
-		$excerpt_length = 10;
-		$words = explode(' ', $text, $excerpt_length + 1);
-		if (count($words) > $excerpt_length) {
-			array_pop($words);
-			array_push($words, '[...]');
-			$text = implode(' ', $words);
-		}
-	}
-	return $text;
-}
-
-
-
-function gmshc_fill_item($post,$point,$address){
-
-		if (empty($point) && empty($address)) return false;
-		
-		if (empty($point) && !empty($address)) {
-		
-			 if ($the_point = gmshc_point($address,"")) {
-				 $address = $the_point['address'];
-				 $point = $the_point['point'];		
-		     } else {
-			 	return false;
-			 }
-		}		
-			
-			if (!empty($post)){
-			
-				$the_image = gmshc_post_thumb($post -> ID);
-				$the_title = $post -> post_title;
-				$the_link = get_permalink($post -> ID);
-				
-				$find = array("\"", "[", "]", "\n","\r");
-				$replace  = array("'","","","","");
-				
-				$the_excerpt = str_replace( $find,$replace, gmshc_get_excerpt($post -> post_content));
-				
-				if (!empty($address)) {					
-				
-				$item = array("point"=>$point,"address" => $address,"img" => $the_image,"title" => $the_title,"link" => $the_link, "excerpt" => $the_excerpt);
-				
-				} else {
-				
-				$item = array("point"=>$point,"img" => $the_image,"title" => $the_title,"link" => $the_link, "excerpt" => $the_excerpt);
-				
-				}
-
-			
-			} else {
-			
-				$item = array("point"=>$point,"address" => $address);
-			
+		$post_obj = get_posts(array('category__in'=>$categories,'numberposts'=>-1));
+		foreach ($post_obj as $post_item) {	
+		  //create points object by cat
+		  $post_points = new GMSHC_Post_Map();
+		  $post_points -> create_post_map($post_item->ID);
+		  if (count($post_points->points) >0) {
+			foreach ($post_points->points as $point) { 			  
+			  if (count($post_points -> points) > 0) array_push($map_points,$point);  
 			}
-			
-			return $item;	
-}
-
-function gmshc_retrive_point($post) {
-
-	$post_points = array();
-	$custum_fieds = get_post_custom($post->ID);
-	$points_addr = isset($custum_fieds['google-map-sc-address'])?$custum_fieds['google-map-sc-address'] : array();
-	$points_ltlg = isset($custum_fieds['google-map-sc-latlng'])?$custum_fieds['google-map-sc-latlng'] : array();
+		  }
+		}			
 	
-	$num_addr = count($points_addr);
-	$num_ltlg = count($points_ltlg ); 	
+	 }  else {
 	
-	if ($num_ltlg > 0 && $num_ltlg==$num_addr){
+		//create points for the current post_id
 	
-		for ($i = 0; $i < $num_ltlg; $i ++){
-			$post_points[$i] = array('point'=>$points_ltlg[$i],'address'=>$points_addr[$i]);		
-		}
-		
-	} else {
-	
-		for ($i = 0; $i < $num_ltlg; $i ++){
-		    if($point = gmshc_point ('',$points_ltlg[$i])){
-			$address = $point['address'];
-			$post_points[$i] = array('point'=>$points_ltlg[$i],'address'=>$address);
-			}		
-		}	
+		$post_points = new GMSHC_Post_Map();
+		$post_points -> create_post_map($post->ID);	
+		$map_points = $post_points->points;	 
 	
 	}
 
+	//Map Point array filled
+		
+	if ( count($map_points) > 0 ) {
 
-	if(count($post_points) > 0) return $post_points;
-	else return false;
-
+		//Generate Map form points, width, height, zoom
+	    
+		return gmshc_generate_map($map_points, $width, $height, $zoom);					
 } 
+	else return __("There is not points to locate on the map");
+}
+
 
 
 /**
@@ -659,18 +439,30 @@ function gmshc_retrive_point($post) {
 add_action('admin_menu', 'gmshc_set');
 
 function gmshc_set() {
-    add_options_page('Google Map Shortcode', 'Google Map Shortcode', 'administrator', 'google-map-shortcode', 'gmshc_options_page');	 
+		$plugin_page = add_options_page('Google Map Shortcode', 'Google Map Shortcode', 'administrator', 'google-map-shortcode', 'gmshc_options_page');	 
+		add_action( 'admin_head-'.$plugin_page, 'gmshc_admin_script' );	
+	 }
+
+/**
+ * Inserting files on the admin header
+ */
+function gmshc_admin_script() {
+
+	$gmshc_admin_header =  "\n<!-- Google Map Shortcode -->\n";		
+	$gmshc_admin_header .= "<script type=\"text/javascript\" src=\"".GMSC_PLUGIN_URL."/js/gmshc-admin.js\"></script>\n";
+	$gmshc_admin_header .= "<link href=\"".GMSC_PLUGIN_URL."/styles/gmshc-admin-styles.css\" rel=\"stylesheet\" type=\"text/css\"/>\n";
+	$gmshc_admin_header .= "\n<!-- /Google Map Shortcode -->\n";		
+		
+	print($gmshc_admin_header);
+
 }
 
 function gmshc_options_page() {
 
 	$options = get_gmshc_options();
-    $gmshc_key = get_option('gmshc_key');
-	$icon_path = GMSC_PLUGIN_URL.'/images/icons/';
-	$icon_dir = GMSC_PLUGIN_DIR.'/images/icons/';
-
-	?>
 	
+    if(isset($_POST['Restore_Default']))	$options = get_gmshc_options(true);	?>
+
 	<div class="wrap">   
 	
 	<h2><?php _e("Google Map Shortcode Settings") ?></h2>
@@ -679,40 +471,21 @@ function gmshc_options_page() {
 
 	if(isset($_POST['Submit'])){
 	
-		if ($_POST['use_icon'] == "custom" && $_POST['custom_icon'] == "") {
-		
-			echo "<div class='error'><p>".__("Please upload a custom icon.")."</p></div>";
-		
-		} else {
+     		$newoptions['width'] = isset($_POST['width'])?$_POST['width']:$options['width'];
+			$newoptions['height'] = isset($_POST['height'])?$_POST['height']:$options['height'];
+			$newoptions['zoom'] = isset($_POST['zoom'])?$_POST['zoom']:$options['zoom'];
+			$newoptions['language'] = isset($_POST['language'])?$_POST['language']:$options['language'];
+			$newoptions['windowhtml'] = isset($_POST['windowhtml'])?$_POST['windowhtml']:$options['windowhtml'];	
 
-			$new_gmshc_key = $_POST['gmshc_key'];
-			$newoptions['width'] = $_POST['width'];
-			$newoptions['height'] = $_POST['height'];
-			$newoptions['zoom'] = $_POST['zoom'];
-			$newoptions['number'] = $_POST['number'];
-			$newoptions['language'] = $_POST['language'];
-			$newoptions['windowhtml'] = $_POST['windowhtml'];
-			
-			$newoptions['use_icon'] = $_POST['use_icon'];
-			$newoptions['default_icon'] = $_POST['default_icon'];
-			$newoptions['custom_icon'] = $_POST['custom_icon'];
-			
-			if ($_POST['use_icon'] == 'default')
-			$newoptions['icon'] = $icon_path .$_POST['default_icon'];
-			else $newoptions['icon'] = $_POST['custom_icon'];
-			
-			$newoptions['version'] = GMSHC_VERSION;
+			$newoptions['default_icon'] = isset($_POST['default_icon'])?$_POST['default_icon']:$options['default_icon'];
+			$newoptions['icons'] = $options['icons'];	
+					
+			$newoptions['version'] = GMSHC_VERSION_CHECK;
 	
 			if ( $options != $newoptions ) {
 				$options = $newoptions;
 				update_option('gmshc_op', $options);			
 			}
-			if ( $gmshc_key != $new_gmshc_key ) {
-				$gmshc_key = $new_gmshc_key;
-				update_option('gmshc_key', $options);			
-			}
-		
-		}			
 	    
  	} 
 
@@ -722,36 +495,37 @@ function gmshc_options_page() {
         update_option('gmshc_op', $options);
 	
     } 
+	
+	$upload_icons = $options['icons'];
 
-	if(isset($_POST['upload']) && isset($_FILES) ){
+	if(isset($_POST['upload'])) {
+		if ($_FILES['datafile']['error'] == 0){
 
-       $filename = $_FILES["datafile"]["name"];
- 
-       $upload = wp_upload_bits($filename, NULL, file_get_contents($_FILES["datafile"]["tmp_name"]));
+		   $filename = $_FILES["datafile"]["name"];
+	 
+		   $upload = wp_upload_bits($filename, NULL, file_get_contents($_FILES["datafile"]["tmp_name"]));
 
-		if ( ! empty($upload['error']) ) {
-			$errorString = sprintf(__('Could not write file %1$s (%2$s)'), $filename, $upload['error']);
-			echo "<div class='error'><p><strong>".$errorString."</strong></p></div>";
-		}  else {     
+			if ( ! empty($upload['error']) ) {
+				$errorString = sprintf(__('Could not write file %1$s (%2$s)'), $filename, $upload['error']);
+				echo "<div class='error'><p><strong>".$errorString."</strong></p></div>";
+			}  else {		
+				array_unshift($upload_icons,$upload['url']);
+				$options['icons'] = $upload_icons;
+				update_option('gmshc_op', $options);		
+			}
 		
-		$options['custom_icon'] = $upload['url'];
-		update_option('gmshc_op', $options);
-		
+		} else {
+			echo "<div class='error'><p><strong>".__("Please upload a valid file")."</strong></p></div>";
 		}
-		
-    }
+	}
 
-	$width = isset ($_POST['width'])? $_POST['width']: $options['width'];
-	$height = isset ($_POST['height'])? $_POST['height'] : $options['height'];
-	$zoom = isset ($_POST['zoom'])? $_POST['zoom']: $options['zoom'];
-	$number = isset ($_POST['number'])? $_POST['number']: $options['number'];
-	$language = isset ($_POST['language'])? $_POST['language']: $options['language'];
-	$windowhtml = $options['windowhtml'];
-	$icon = $options['width'];
-	$use_icon = isset ($_POST['use_icon'])? $_POST['use_icon']: $options['use_icon'];
-	$default_icon = isset ($_POST['default_icon'])? $_POST['default_icon']: $options['default_icon'];
-	$custom_icon = $options['custom_icon'];
-
+	$width = $options['width'];
+	$height = $options['height'];
+	$zoom = $options['zoom'];
+	$language = $options['language'];
+	$windowhtml = $options['windowhtml'];	
+	$default_icon = $options['default_icon'];
+	
 	?>  
 	
 	<form method="POST" name="options" target="_self" enctype="multipart/form-data">
@@ -760,32 +534,12 @@ function gmshc_options_page() {
 	
 	<p><?php _e("The shortcode attributes overwrite these options.") ?></p>
 	
-	<?php 
-	
-	$icons_array = array();
-	if ($handle = opendir($icon_dir)) {
-		$i = 0;
-		while (false !== ($file = readdir($handle))) {
-	
-			$file_type = wp_check_filetype($file);
-	
-			$file_ext = $file_type['ext'];
-		
-			if ($file != "." && $file != ".." && ($file_ext == 'gif' || $file_ext == 'jpg' || $file_ext == 'png') ) {
-				$icons_array[$i] = $file;
-				$i ++;
-			}
-		}
-	}
-	
-	?>
-
     <table width="80%%" border="0" cellspacing="10" cellpadding="0">
       <tr>
         <td colspan="2"><strong><?php _e("Dimensions") ?></strong></td>
       </tr>  
       <tr>
-        <td width="150" align="right" height="40"><?php _e("Width") ?></td>
+        <td width="60" align="right" height="40"><?php _e("Width") ?></td>
         <td><input name="width" type="text" size="6" value="<?php echo $width ?>" /></td>
       </tr>
       <tr>
@@ -795,45 +549,21 @@ function gmshc_options_page() {
       <tr>
         <td align="right"><?php _e("Zoom") ?></td>
         <td><input name="zoom" type="text" size="6" value="<?php echo $zoom ?>" /></td>
-      </tr> 
+      </tr>  
       <tr>
-        <td align="right"><?php _e("Maximum number of point in a single map") ?></td>
-        <td><input name="number" type="text" size="6" value="<?php echo $number ?>" /></td>
-      </tr>       
-      <tr>
-        <td colspan="2"><strong><?php _e("Select Icon") ?></strong></td>
+        <td colspan="2"><strong><?php _e("Select Default Icon") ?></strong></td>
       </tr>   
       <tr>
-        <td width="150" align="right" height="40">
-        <input name="use_icon" type="radio" value="default" style="margin-right:10px;" <?php echo ($use_icon == "default" ? "checked=\"checked\"" : "") ?>/><?php _e("Use default icons") ?>
-        </td>
-        <td>
-        <div style="width:30px; height:30px; float:left; margin:0 15px">
-        <img src="<?php echo $icon_path.$default_icon ?>" alt="icon" id="icon_img" />
-        </div>
-        <select name="default_icon" id = "default_icon">
-        <?php foreach ($icons_array as $icon){ ?>
-          <option value="<?php echo $icon ?>" <?php echo ($icon == $default_icon ? "selected" : "") ?>><?php echo $icon ?></option>
-        <?php } ?>
-        </select> 
-                
+        <td align="right" valign="top" colspan="2">
+
+		<?php gmshc_deploy_icons(); ?>
+		
         </td>
       </tr>
       <tr>
-        <td align="right" valign="top"><input name="use_icon" type="radio" value="custom" style="margin-right:10px;" <?php echo ($use_icon == "custom" ? "checked=\"checked\"" : "") ?> /><?php _e("Use custom icons") ?>
-        </td>
-        <td>
-            <div style="width:30px; height:30px; float:left; margin:0 15px">
-                <?php if ($custom_icon != "") { ?>
-                <img src="<?php echo $custom_icon ?>" alt="icon" id="icon_img" />
-                <?php } ?>
-            </div>    
-            <?php _e("Please specify a file:") ?><br />
-            <input type="file" name="datafile" size="40" />
-            <p>
-            <input type="submit" name="upload" value="Upload" class="button"  style="margin-left:50px" />
-            </p>
-            <input name="custom_icon" type="hidden" size="18" value="<?php echo $custom_icon ?>" /> 
+        <td align="left" valign="top" colspan="2">
+            <?php _e("To include new icons just specify the file location:") ?><br />
+            <input type="file" name="datafile" size="40" /> <input type="submit" name="upload" value="Upload" class="button" />
         </td>
       </tr>
       <tr>
@@ -875,11 +605,27 @@ function gmshc_options_page() {
     
     <h3 style="padding-top:30px; margin-top:30px; border-top:1px solid #CCCCCC;"><?php _e("Info Windows") ?></h3>
     
-    <p><?php _e("This is the html inside of the Map Info Window opened after clicking on the markers, you can include the following tags.") ?></p>
+    <p><?php _e("This is the html inside of the Map Info Window opened after clicking on the markers.") ?></p>
+
+    <div id="gmshc_html">
+        <textarea name="windowhtml" cols="50" rows="12" id="windowhtml">
+        <?php  
+        if  (empty($windowhtml)) echo gmshc_defaul_windowhtml(); 
+        else echo str_replace("\\", "",$windowhtml);
+        ?>
+        </textarea>
+        <div id="gmshc_previews">
+            <strong><?php _e("Previews") ?></strong> 
+            <div id="gmshc_html_previews">       
+            <?php echo gmshc_defaul_windowhtml(); ?>
+            </div>
+        </div>
+    </div>
     
+    <p><?php _e("You can include the following tags.") ?></p>    
     <table width="80%%" border="0" cellspacing="10" cellpadding="0">
       <tr>
-        <td width="150" align="right"><strong>%title%</strong></td>
+        <td width="60" align="right"><strong>%title%</strong></td>
         <td><?php _e("The title of your post") ?></td>
       </tr>
       <tr>
@@ -890,6 +636,10 @@ function gmshc_options_page() {
         <td align="right"><strong>%thubnail%</strong></td>
         <td><?php _e("The thubnail of the last image attached to your post") ?></td>
       </tr>
+      <tr>
+        <td align="right"><strong>%description%</strong></td>
+        <td><?php _e("The excerpt of your post") ?></td>
+      </tr>      
       <tr>
         <td align="right"><strong>%excerpt%</strong></td>
         <td><?php _e("The excerpt of your post") ?></td>
@@ -907,316 +657,29 @@ function gmshc_options_page() {
         <td><?php _e("Info Html width") ?></td>
       </tr>           
     </table>
-    <br />
-    
-    <textarea name="windowhtml" cols="110" rows="12" id="windowhtml">
-    <?php  
-    if  (empty($windowhtml)) echo gmshc_defaul_windowhtml(); 
-    else echo str_replace("\\", "",$windowhtml);
-    ?>
-    </textarea>
-    
-    <p align="right" style="width:800px; padding:0">
-    <input type="submit" name="Use_Default" value="Restore Default"/>
-    </p>
-    
+
+
     <p class="submit">
-    <input type="submit" name="Submit" value="Update" class="button-primary" />
+    <input type="submit" name="Submit" value="Update" class="button-primary" /><input type="submit" name="Use_Default" value="<?php _e("Restore Default Html") ?>"/>
     </p>
     
-    <h3 style="padding-top:30px; margin-top:30px; border-top:1px solid #CCCCCC;"><?php _e("Google Map Api Key") ?></h3>
-    
-    <p><?php _e("Enter your Google Map Api Key. You can get it <a href='http://code.google.com/apis/maps/signup.html' target='_blank'>here</a>. This is not required. Google Maps JavaScript API V3 no longer needs API keys!") ?></p>
-    <p><input name="gmshc_key" type="text" value="<?php echo $gmshc_key ?>" size="105"/>
-    
-    <p class="submit">
-    <input type="submit" name="Submit" value="Update" class="button-primary" />
-    </p>
-    
-    <h3 style="padding-top:30px; margin-top:30px; border-top:1px solid #CCCCCC;">Use</h3>
+    <h3 style="padding-top:30px; margin-top:30px; border-top:1px solid #CCCCCC;"><?php _e("How to Use") ?></h3>
     <p><?php _e("You can include a Google Map Shortcode everywhere") ?></p>
     
     <p><?php _e("In your post using: ") ?><strong>[google-map-sc option = "option value"]</strong></p>
     <p><?php _e("In your theme files using: ") ?><strong>  echo do_shortcode ('[google-map-sc option = "option value"]') </strong></p>
+ 
     
-    <h3 style="padding-top:30px; margin-top:30px; border-top:1px solid #CCCCCC;">Options</h3>
+    <h3 style="padding-top:30px; margin-top:30px; border-top:1px solid #CCCCCC;"><?php _e("Feedback") ?></h3>
     
-    <table width="80%%" border="0" cellspacing="10" cellpadding="0">
-      <tr>
-        <td width="150"><div align="right"><strong><?php _e("address") ?></strong></div></td>
-        <td><?php _e("Specific address") ?></td>
-      </tr>
-      <tr>
-        <td><div align="right"><strong>id</strong></div></td>
-        <td><?php _e("Specific post ID") ?></td>
-      </tr>
-      <tr>
-        <td><div align="right"><strong><?php _e("cat") ?></strong></div></td>
-        <td><?php _e("Include post under this categories. (category number separated by comma)") ?></td>
-      </tr>
-      <tr>
-        <td><div align="right"><strong><?php _e("number") ?></strong></div></td>
-        <td><?php _e("Number of points/post on your map (Default 10)") ?></td>
-      </tr>
-      <tr>
-        <td><div align="right"><strong><?php _e("zoom") ?></strong></div></td>
-        <td><?php _e("Inicial zoom (Default 10)") ?></td>
-      </tr>
-      <tr>
-        <td><div align="right"><strong>width") ?></strong></div></td>
-        <td><?php _e("Width of your map") ?></td>
-      </tr> 
-      <tr>
-        <td><div align="right"><strong><?php _e("height") ?></strong></div></td>
-        <td><?php _e("Height of your map") ?></td>
-      </tr>        
-    </table>
-    
-    <h3 style="padding-top:30px; margin-top:30px; border-top:1px solid #CCCCCC;">Feedback</h3>
-    
-    <p><?php _e('For more details and examples visite the <a href="http://web-argument.com/2011/05/04/google-map-shortcode-2-0-total-solution/">Plugin Page</a>. All the comments are welcome.') ?></p>
+    <p><?php _e('For more details and examples visite the <a http://web-argument.com/2011/07/18/google-map-shortcode-plugin-version-2-1">Plugin Page</a>. All the comments are welcome.') ?></p>
     
     
     <p class="submit">
-    <input type="submit" name="Submit" value="Update" class="button-primary" />
+    <input type="submit" name="Submit" value="Update" class="button-primary" /><input type="submit" name="Restore_Default" value="<?php _e("Restore Default") ?>" class="button" />
     </p>
     </form>
     </div>
 
-	<script type="text/javascript">
-    
-    (function ($) {
-    
-         $(document).ready(function(){    
-         
-            $("#default_icon").click(function(){
-                switchImg(this); 
-            });
-            
-            var iconSelect = "";
-            function switchImg (obj) {
-                var iconName = $(obj).val();			
-                var imgUrl = '<?php echo $icon_path ?>'+iconName;
-                $("#icon_img").attr('src',imgUrl);
-            }		
-        
-         });
-		 
-    })(jQuery);
-    
-    </script>
 
-<?php } 
-
-function gmshc_point ($address,$ltlg){
-//http://code.google.com/apis/maps/documentation/geocoding/
-	
-	$formatted_address = "";
-	$point = "";
-	$response = false;
-	
-	if (!empty($ltlg)) {
-		$query = $ltlg;
-		$type = "latlng";
-	} else if (!empty($address)) { 
-	
-		$find = array("\n","\r"," ");
-		$replace = array("","","+");					
-		$address = str_replace( $find,$replace, $address);
-			
-		$query = $address;
-		$type = "address";
-	}
-	else return false;	
-
-	if(function_exists('json_decode')){
-	    
-		$options = get_gmshc_options();
-		$api_url = "http://maps.googleapis.com/maps/api/geocode/json?".$type."=".$query."&sensor=false&language=".$options['language'];
-
-		$json_answ = file_get_contents($api_url);
-		$answ_arr = json_decode($json_answ,true);
-		
-		if (isset($answ_arr["status"]) && $answ_arr["status"] == "OK"){		
-			$formatted_address = $answ_arr["results"]["0"]["formatted_address"];
-			$point = $answ_arr["results"]["0"]["geometry"]["location"]["lat"].",".$answ_arr["results"]["0"]["geometry"]["location"]["lng"];
-		}
-			
-	} else {		
-		
-		$gmshc_key = get_option('gmshc_key');
-		
-		$url = 'http://maps.google.com/maps/geo?q='.$query.'&key='.$gmshc_key.'&sensor=false&output=xml&oe=utf8';
-		
-		$response = gmshc_xml2array($url);
-		
-		if (isset($response['kml']['Response']['Placemark']['Point'])) {
-		
-			$coordinates = $response['kml']['Response']['Placemark']['Point']['coordinates'];
-			$formatted_address = $response['kml']['Response']['Placemark']['address'];
-			
-			if (!empty($coordinates)) {
-			
-				$point_array = split(",",$coordinates);
-				
-				$point = $point_array[1].",".$point_array[0];			
-			
-			}
-		
-		} 		
-		
-	}
-	
-	if (!empty($point) && !empty($formatted_address)){
-	
-		$response = array('point'=>$point,'address'=>$formatted_address);
-		
-	}
-	
-	return $response;	
-
-}
-
-
-
-//from http://us3.php.net/manual/en/function.xml-parse.php
-function gmshc_xml2array($url, $get_attributes = 1, $priority = 'tag')
-{
-    $contents = "";
-    if (!function_exists('xml_parser_create'))
-    {
-        return array ();
-    }
-    $parser = xml_parser_create('');
-    if (!($fp = @ fopen($url, 'rb')))
-    {
-        return array ();
-    }
-    while (!feof($fp))
-    {
-        $contents .= fread($fp, 8192);
-    }
-    fclose($fp);
-    xml_parser_set_option($parser, XML_OPTION_TARGET_ENCODING, "UTF-8");
-    xml_parser_set_option($parser, XML_OPTION_CASE_FOLDING, 0);
-    xml_parser_set_option($parser, XML_OPTION_SKIP_WHITE, 1);
-    xml_parse_into_struct($parser, trim($contents), $xml_values);
-    xml_parser_free($parser);
-    if (!$xml_values)
-        return; //Hmm...
-    $xml_array = array ();
-    $parents = array ();
-    $opened_tags = array ();
-    $arr = array ();
-    $current = & $xml_array;
-    $repeated_tag_index = array ();
-    foreach ($xml_values as $data)
-    {
-        unset ($attributes, $value);
-        extract($data);
-        $result = array ();
-        $attributes_data = array ();
-        if (isset ($value))
-        {
-            if ($priority == 'tag')
-                $result = $value;
-            else
-                $result['value'] = $value;
-        }
-        if (isset ($attributes) and $get_attributes)
-        {
-            foreach ($attributes as $attr => $val)
-            {
-                if ($priority == 'tag')
-                    $attributes_data[$attr] = $val;
-                else
-                    $result['attr'][$attr] = $val; //Set all the attributes in a array called 'attr'
-            }
-        }
-        if ($type == "open")
-        {
-            $parent[$level -1] = & $current;
-            if (!is_array($current) or (!in_array($tag, array_keys($current))))
-            {
-                $current[$tag] = $result;
-                if ($attributes_data)
-                    $current[$tag . '_attr'] = $attributes_data;
-                $repeated_tag_index[$tag . '_' . $level] = 1;
-                $current = & $current[$tag];
-            }
-            else
-            {
-                if (isset ($current[$tag][0]))
-                {
-                    $current[$tag][$repeated_tag_index[$tag . '_' . $level]] = $result;
-                    $repeated_tag_index[$tag . '_' . $level]++;
-                }
-                else
-                {
-                    $current[$tag] = array (
-                        $current[$tag],
-                        $result
-                    );
-                    $repeated_tag_index[$tag . '_' . $level] = 2;
-                    if (isset ($current[$tag . '_attr']))
-                    {
-                        $current[$tag]['0_attr'] = $current[$tag . '_attr'];
-                        unset ($current[$tag . '_attr']);
-                    }
-                }
-                $last_item_index = $repeated_tag_index[$tag . '_' . $level] - 1;
-                $current = & $current[$tag][$last_item_index];
-            }
-        }
-        elseif ($type == "complete")
-        {
-            if (!isset ($current[$tag]))
-            {
-                $current[$tag] = $result;
-                $repeated_tag_index[$tag . '_' . $level] = 1;
-                if ($priority == 'tag' and $attributes_data)
-                    $current[$tag . '_attr'] = $attributes_data;
-            }
-            else
-            {
-                if (isset ($current[$tag][0]) and is_array($current[$tag]))
-                {
-                    $current[$tag][$repeated_tag_index[$tag . '_' . $level]] = $result;
-                    if ($priority == 'tag' and $get_attributes and $attributes_data)
-                    {
-                        $current[$tag][$repeated_tag_index[$tag . '_' . $level] . '_attr'] = $attributes_data;
-                    }
-                    $repeated_tag_index[$tag . '_' . $level]++;
-                }
-                else
-                {
-                    $current[$tag] = array (
-                        $current[$tag],
-                        $result
-                    );
-                    $repeated_tag_index[$tag . '_' . $level] = 1;
-                    if ($priority == 'tag' and $get_attributes)
-                    {
-                        if (isset ($current[$tag . '_attr']))
-                        {
-                            $current[$tag]['0_attr'] = $current[$tag . '_attr'];
-                            unset ($current[$tag . '_attr']);
-                        }
-                        if ($attributes_data)
-                        {
-                            $current[$tag][$repeated_tag_index[$tag . '_' . $level] . '_attr'] = $attributes_data;
-                        }
-                    }
-                    $repeated_tag_index[$tag . '_' . $level]++; //0 and 1 index is already taken
-                }
-            }
-        }
-        elseif ($type == 'close')
-        {
-            $current = & $parent[$level -1];
-        }
-    }
-    return ($xml_array);
-}
-
-?>
+<?php }  ?>
