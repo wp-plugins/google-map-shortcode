@@ -40,7 +40,7 @@ For more details and examples visit the <a href="http://web-argument.com/2011/07
 4. Using the Google Map editor button insert the address or latitude/longitude and add the map on your posts/pages. 
 
 == How to use ==
-Visit <a href="http://web-argument.com/2011/05/04/google-map-shortcode-how-to-use/">Google Map Shortcode - How to use</a>
+Visit <a href="http://web-argument.com/2011/07/20/google-map-shortcode-how-to-use/">Google Map Shortcode - How to use</a>
 
 == Screenshots ==
 
