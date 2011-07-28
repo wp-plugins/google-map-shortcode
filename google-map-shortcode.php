@@ -3,7 +3,7 @@
 Plugin Name: Google Map Shortcode
 Plugin URI: http://web-argument.com/google-map-shortcode-2-0-total-solution/
 Description: Include Google Map in your blogs with just one click. 
-Version: 2.1
+Version: 2.1.1
 Author: Alain Gonzalez
 Author URI: http://web-argument.com/
 */
@@ -30,7 +30,7 @@ function get_gmshc_options ($default = false){
 							'windowhtml' => gmshc_defaul_windowhtml(),
 							'icons' => array(),
 							'default_icon' => GMSC_PLUGIN_URL.'/images/icons/marker.png',
-							'version' => '2.1'
+							'version' => '2.1.1'
 							);
 							
     	
@@ -105,12 +105,12 @@ function gmshc_tab_process(){
 	$post_id = $_REQUEST["post_id"];
 	$custom_fieds = get_post_custom($post_id);
 	
-	$address = isset($_REQUEST['new_address'])?$_REQUEST['new_address'] : "";
+	$address = isset($_REQUEST['new_address'])? stripslashes($_REQUEST['new_address']) : "";
 	$ltlg = isset($_REQUEST['new_ltlg'])?$_REQUEST['new_ltlg'] : "";
-	$title = isset($_REQUEST['new_title'])?$_REQUEST['new_title'] : get_the_title($post_id);
-	$description = isset($_REQUEST['new_description'])?$_REQUEST['new_description'] : "";
-	$icon = isset($_REQUEST['default_icon'])?$_REQUEST['default_icon'] : "";
-	$selected_thumbnail = isset($_REQUEST['selected_thumbnail'])?$_REQUEST['selected_thumbnail'] : "";
+	$title = isset($_REQUEST['new_title'])? stripslashes($_REQUEST['new_title']) : get_the_title($post_id);
+	$description = isset($_REQUEST['new_description'])? stripslashes($_REQUEST['new_description']) : "";
+	$icon = isset($_REQUEST['default_icon'])?stripslashes($_REQUEST['default_icon']) : "";
+	$selected_thumbnail = isset($_REQUEST['selected_thumbnail'])? stripslashes($_REQUEST['selected_thumbnail']) : "";
 
 	$add_point = isset($_REQUEST['add_point']) ? $_REQUEST['add_point'] : '';
 	$del_point = isset($_REQUEST['delp']) ? $_REQUEST['delp'] : '';
@@ -119,12 +119,12 @@ function gmshc_tab_process(){
 	$height = isset($_REQUEST['height']) ? $_REQUEST['height'] : $options['height'];
 	$zoom = isset($_REQUEST['zoom']) ? $_REQUEST['zoom'] : $options['zoom'];
 	
-	$address_list = isset($_REQUEST['addr']) ? $_REQUEST['addr'] : "";
-	$title_list = isset($_REQUEST['title']) ? $_REQUEST['title'] : "";	
-	$desc_list = isset($_REQUEST['desc']) ? $_REQUEST['desc'] : "";	
+	$address_list = isset($_REQUEST['addr']) ? gmshc_stripslashes_deep($_REQUEST['addr']) : "";
+	$title_list = isset($_REQUEST['title']) ? gmshc_stripslashes_deep($_REQUEST['title']) : "";	
+	$desc_list = isset($_REQUEST['desc']) ? gmshc_stripslashes_deep($_REQUEST['desc']) : "";	
 	$ltlg_list = isset($_REQUEST['ltlg']) ? $_REQUEST['ltlg'] : "";	
-	$icon_list = isset($_REQUEST['icon']) ? $_REQUEST['icon'] : "";	
-	$thumb_list = isset($_REQUEST['thumb']) ? $_REQUEST['thumb'] : "";
+	$icon_list = isset($_REQUEST['icon']) ? gmshc_stripslashes_deep($_REQUEST['icon']) : "";	
+	$thumb_list = isset($_REQUEST['thumb'])? gmshc_stripslashes_deep($_REQUEST['thumb']) : "";
 	
     $post_points = new GMSHC_Post_Map();
 	$post_points -> create_post_map($post_id);
@@ -140,7 +140,7 @@ function gmshc_tab_process(){
 
 	else if (!empty($update_point)) {
 	
-		if ( $post_points -> update_points($address_list,$ltlg_list,$title_list,$desc_list,$icon_list,$thumb_list,$post_id))
+		if ( $post_points -> update_points($address_list,$ltlg_list,$title_list,$desc_list,$icon_list,$thumb_list))
 			echo "<div class='updated'><p>".__("The Point was updated.")."</p></div>";
 	    else echo "<div class='error'><p>".__("The Points can't be updated.")."</p></div>";
 	}
@@ -232,12 +232,13 @@ function gmshc_tab_process(){
                         <div class="gmshc_label">
                             <strong><?php _e("Thumbnail: "); ?></strong><?php _e("If you want to attach an image to the point you need to upload it first to the post gallery"); ?>
                         </div> 
-                    <?php  } ?>                   
+                    <?php  } ?> 
+                    <p align="left"><a class="button" href = "?post_id=<?php echo $post_id ?>&type=image" title="Upload Images"><?php _e("Upload Images") ?></a></p>                  
 				</td>
             </tr>             			
             </table>
-   
-        	<p><input class="button" value="<?php _e("Add Point") ?>" name="add_point" type="submit"></p>
+            
+        	<p><input class="button-primary" value="<?php _e("Add Point") ?>" name="add_point" type="submit"></p>
             
 			<?php
             if ( count($post_points -> points) > 0 ){
@@ -293,6 +294,7 @@ function gmshc_tab_process(){
             </table>
         
    	    <p><input class="button-primary" value="<?php _e("Insert Map"); ?>" type="button" id="insert_map"></p>
+        <br />
         
 			<?php  } ?>
 		</form>
@@ -322,7 +324,7 @@ function gmshc_tab_process(){
 	if ( $output != '' )
 		return $output;		 
  
-	$defaul_gmshc_windowhtml = "<div style='margin:0; padding:0px; height:110px; width:%width%; overflow:hidden; font-size:11px; clear:both; line-height:13px;'>\n";
+	$defaul_gmshc_windowhtml = "<div style='margin:0; padding:0px; height:125px; width:%width%; overflow:hidden; font-size:11px; clear:both; line-height:13px;'>\n";
 	$defaul_gmshc_windowhtml .= "<div style='float:left; width:200px'>\n";
 	$defaul_gmshc_windowhtml .= "<a class='title' href='%link%' style='clear:both; display:block; font-size:12px; line-height: 18px; font-weight:bold;'>%title%</a>\n";
 	$defaul_gmshc_windowhtml .= "<div><strong style='font-size:9px'>%address%</strong></div>\n";
@@ -475,7 +477,7 @@ function gmshc_options_page() {
 			$newoptions['height'] = isset($_POST['height'])?$_POST['height']:$options['height'];
 			$newoptions['zoom'] = isset($_POST['zoom'])?$_POST['zoom']:$options['zoom'];
 			$newoptions['language'] = isset($_POST['language'])?$_POST['language']:$options['language'];
-			$newoptions['windowhtml'] = isset($_POST['windowhtml'])?$_POST['windowhtml']:$options['windowhtml'];	
+			$newoptions['windowhtml'] = isset($_POST['windowhtml'])? $_POST['windowhtml']:$options['windowhtml'];	
 
 			$newoptions['default_icon'] = isset($_POST['default_icon'])?$_POST['default_icon']:$options['default_icon'];
 			$newoptions['icons'] = $options['icons'];	
@@ -611,7 +613,9 @@ function gmshc_options_page() {
         <textarea name="windowhtml" cols="50" rows="12" id="windowhtml">
         <?php  
         if  (empty($windowhtml)) echo gmshc_defaul_windowhtml(); 
-        else echo str_replace("\\", "",$windowhtml);
+        else {
+			echo str_replace("\\", "",$windowhtml);
+		}
         ?>
         </textarea>
         <div id="gmshc_previews">
@@ -672,7 +676,7 @@ function gmshc_options_page() {
     
     <h3 style="padding-top:30px; margin-top:30px; border-top:1px solid #CCCCCC;"><?php _e("Feedback") ?></h3>
     
-    <p><?php _e('For more details and examples visite the <a http://web-argument.com/2011/07/18/google-map-shortcode-plugin-version-2-1">Plugin Page</a>. All the comments are welcome.') ?></p>
+    <p><?php _e('For more details and examples visite the <a href="http://web-argument.com/2011/07/18/google-map-shortcode-plugin-version-2-1">Plugin Page</a>. All the comments are welcome.') ?></p>
     
     
     <p class="submit">
@@ -682,4 +686,17 @@ function gmshc_options_page() {
     </div>
 
 
-<?php }  ?>
+<?php } 
+
+/**
+ * Adding media tab
+ */
+function gmshc_media_menu($tabs) {
+$newtab = array('gmshc' => __('Google Map Shortcode', 'gmshc'));
+return array_merge($tabs, $newtab);
+}
+
+add_filter('media_upload_tabs', 'gmshc_media_menu');
+
+
+?>

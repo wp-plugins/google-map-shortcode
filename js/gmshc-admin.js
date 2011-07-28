@@ -26,10 +26,6 @@
 			
 		});
 		
-		$("#new_title").click(function(){
-			$(this).val("");
-			});
-		
      	gmshc_update_editor_custom_field();
 	
 	 });

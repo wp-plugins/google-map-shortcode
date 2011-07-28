@@ -89,6 +89,15 @@ function gmshc_get_windowhtml(&$point) {
 	
 }
 
+function gmshc_stripslashes_deep($value)
+{
+    $value = is_array($value) ?
+                array_map('stripslashes_deep', $value) :
+                stripslashes($value);
+
+    return $value;
+}
+
 /**
  * Get all the thumbnails from post
  */
@@ -216,10 +225,9 @@ function gmshc_deploy_icons(){
 function gmshc_get_points($post_id) {
 
 	$post_data = get_post_meta($post_id,'google-map-sc',true);
-
 	$post_points = array();
 	if($post_data != ""){
-		$points = json_decode($post_data, true);
+		$points = json_decode(urldecode($post_data), true);
 		if(is_array($points)){
 			foreach($points as $point){
 				$point_obj = new GMSHC_Point();
@@ -258,14 +266,16 @@ function gmshc_get_points($post_id) {
  * Save the json data into the post custom field 'google-map-sc'
  */
 function gmshc_save_points($post_id,$points) {
-
 	$post_data = get_post_meta($post_id,'google-map-sc',true);
 
 	$new_post_data = json_encode($points);
 
-    if ($post_data == "null")  return add_post_meta($post_id, 'google-map-sc', $new_post_data, true);
+    if ($post_data == "null")  {
+		delete_post_meta($post_id, 'google-map-sc');
+		return add_post_meta($post_id, 'google-map-sc', $new_post_data, true);
+	}
 	else return update_post_meta($post_id,'google-map-sc',$new_post_data, $post_data);
-    	
+   	
 }
 
 

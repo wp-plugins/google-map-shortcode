@@ -42,7 +42,7 @@ class GMSHC_Post_Map
 		$point = array();
 		foreach ($address_list as $id => $address){
 			$new_point = new GMSHC_Point();
-			if($new_point->create_point($address[$id],$ltlg_list[$id],$title_list[$id],$desc_list[$id],$icon_list[$id],$thumb_list[$id],$this->post_id,false)) {
+			if($new_point->create_point($address,$ltlg_list[$id],$title_list[$id],$desc_list[$id],$icon_list[$id],$thumb_list[$id],$this->post_id,false)) {
 				array_push($new_points_array,$new_point);
 			}
 			else return false;			 

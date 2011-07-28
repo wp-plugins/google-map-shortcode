@@ -4,31 +4,30 @@ Donate link: http://web-argument.com/2011/07/18/google-map-shortcode-plugin-vers
 Tags: google map, shortcode, map, categories, widget, post map, point, marker, list, location, address, images
 Requires at least: 2.5
 Tested up to: 3.2.1
-Stable tag: 2.1
+Stable tag: 2.1.1
 
-Friendly integration of Google Map instances into your blogs. Allows displaying multiple maps on your pages. Insert points into maps easily. 
+Real Friendly integration of Google Map instances into your blogs. Allows displaying multiple maps on your pages. 
 
 == Description ==
 
-This plugin allows you to include instances of Google Map in your blogs using shortcodes. You can insert maps everywhere: in your theme files, posts and pages.  An editor button allows inserting points and maps into your posts/pages with a single click. The points can include custom title, description, marker and thumbnail.
+This plugin allows you to include instances of Google Map in your blogs with a simple editor button. You can insert maps everywhere: in your theme files, posts and pages. The points can include custom title, description, marker and thumbnail.
 
 Special Features:
 
-*	Editor button added, to include the points to the map easily.
+*	Editor button allows to include points and maps.
 * 	Custom markers allowed.
 *   Based on Google Maps Javascript API Version 3.
 *  	Faster and more applicable to mobile devices.
 * 	Open Google Map in new window - included to the html windows.
 * 	Post ID include as shortcode parameter.
-* 	Map in multiple languages allows.
-* 	API key not required.
+* 	Map in multiple languages.
 * 	Multiples points in a single map.
 * 	Multiples maps in a single page.
-* 	Show post under categories.
-* 	Inserting maps everywhere.
-*   When you click on a point the window box opened can shows part of the content of your posts (post title, thumbnails and excerpt) or a custom title description and thumbnail.
-*   You can customize the html of the info window box on your maps.
-*   The shortcode allows different options to customize your maps like: initial zoom, width, height, under categories, post ID, number of points, specific address, icon and thumbnail.
+* 	Show post-points under categories.
+* 	Allows to insert maps everywhere.
+*   The window box opened display part of the content of your posts like: post title, thumbnails, excerpt or a custom title description and thumbnail.
+*   You can customize the html of the info window box on the settings.
+*   The shortcode allows different options to customize your maps like: initial zoom, width, height, categories, post ID, specific address, marker and thumbnail.
 
 For more details and examples visit the <a href="http://web-argument.com/2011/07/18/google-map-shortcode-plugin-version-2-1/">plugin page</a>.
 
@@ -37,7 +36,7 @@ For more details and examples visit the <a href="http://web-argument.com/2011/07
 1. Upload 'Google Map Short Code' folder to the '/wp-content/plugins/' directory.
 2. Activate the plugin through the 'Plugins' menu in WordPress.
 3. Go to the Google Map Shortcode Options page under settings and save your prefered options.
-4. Using the Google Map editor button insert the address or latitude/longitude and add the map on your posts/pages. 
+4. Using the Google Map editor button insert the address and add the map into your posts/pages. 
 
 == How to use ==
 Visit <a href="http://web-argument.com/2011/07/20/google-map-shortcode-how-to-use/">Google Map Shortcode - How to use</a>
@@ -47,9 +46,15 @@ Visit <a href="http://web-argument.com/2011/07/20/google-map-shortcode-how-to-us
 1. Custom Marker
 2. Google Map Shortcode Button
 3. Google Map Shortcode editor panel
-
+4. Google Map Shortcode Media Tab
 
 == Changelog ==  
+
+= 2.1.1 =
+ * Google Map Shortcode tab added to the media editor window.  
+ * Upload Image button added. 
+ * Cleaning string before saving points fixed.
+ * Other bugs fixed.
  
 = 2.1 =  
  * Allows selecting single point icon, title and description.
