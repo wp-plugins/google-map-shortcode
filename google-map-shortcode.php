@@ -3,7 +3,7 @@
 Plugin Name: Google Map Shortcode
 Plugin URI: http://web-argument.com/google-map-shortcode-2-0-total-solution/
 Description: Include Google Map in your blogs with just one click. 
-Version: 2.1.1
+Version: 2.1.2
 Author: Alain Gonzalez
 Author URI: http://web-argument.com/
 */
@@ -30,7 +30,7 @@ function get_gmshc_options ($default = false){
 							'windowhtml' => gmshc_defaul_windowhtml(),
 							'icons' => array(),
 							'default_icon' => GMSC_PLUGIN_URL.'/images/icons/marker.png',
-							'version' => '2.1.1'
+							'version' => '2.1.2'
 							);
 							
     	
@@ -153,6 +153,7 @@ function gmshc_tab_process(){
 	?>
     
     <script type="text/javascript" src="<?php echo GMSC_PLUGIN_URL ?>/js/gmshc-admin.js"></script>
+    <?php gmshc_head() ?>
     <link href="<?php echo GMSC_PLUGIN_URL ?>/styles/gmshc-admin-styles.css" rel="stylesheet" type="text/css"/>
     
         <div style="width:620px; margin:10px auto">
@@ -293,12 +294,14 @@ function gmshc_tab_process(){
                 </tbody> 	    
             </table>
         
-   	    <p><input class="button-primary" value="<?php _e("Insert Map"); ?>" type="button" id="insert_map"></p>
-        <br />
-        
+   	    <p><input class="button-primary" value="<?php _e("Insert Map"); ?>" type="button" id="insert_map"> <a class="button" href="#gmshc_map" id="gmshc_show" show="<?php _e("Show Map") ?>" hide="<?php _e("Hide Map") ?>"><?php _e("Show Map") ?></a></p>        
+        </div>
+        <div id="gmshc_map" style="height:1px; overflow:hidden;">
+        <?php echo do_shortcode("[google-map-sc id=".$post_id." width=600 height=420]"); ?>
+        </div>
+        <br />        
 			<?php  } ?>
 		</form>
-	</div>
 
    
 <?php

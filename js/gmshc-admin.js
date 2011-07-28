@@ -26,6 +26,18 @@
 			
 		});
 		
+		$("#gmshc_show").click(function(){
+			var mapDiv = $("#gmshc_map");
+			var mapBtn = $(this);
+			if (mapDiv.height() >1) {
+				mapDiv.height("1");				
+				mapBtn.text(mapBtn.attr("show"));
+			} else {
+				mapDiv.height("440");				
+				mapBtn.text(mapBtn.attr("hide"));								
+			}
+		});	
+		
      	gmshc_update_editor_custom_field();
 	
 	 });

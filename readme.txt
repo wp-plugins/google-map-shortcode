@@ -4,7 +4,7 @@ Donate link: http://web-argument.com/2011/07/18/google-map-shortcode-plugin-vers
 Tags: google map, shortcode, map, categories, widget, post map, point, marker, list, location, address, images
 Requires at least: 2.5
 Tested up to: 3.2.1
-Stable tag: 2.1.1
+Stable tag: 2.1.2
 
 Real Friendly integration of Google Map instances into your blogs. Allows displaying multiple maps on your pages. 
 
@@ -47,8 +47,12 @@ Visit <a href="http://web-argument.com/2011/07/20/google-map-shortcode-how-to-us
 2. Google Map Shortcode Button
 3. Google Map Shortcode editor panel
 4. Google Map Shortcode Media Tab
+5. Insert/Show map.
 
 == Changelog ==  
+
+= 2.1.2 =
+ * Preview map added on the map editor panel.  
 
 = 2.1.1 =
  * Google Map Shortcode tab added to the media editor window.  
