@@ -1,7 +1,7 @@
 <?php
 /**
  * Google Map Shortcode 
- * Version: 2.1
+ * Version: 2.2
  * Author: Alain Gonzalez
  * Author URI: http://web-argument.com/
 */
@@ -11,6 +11,7 @@ class GMSHC_Post_Map
 	var $post_id;
 	var $points = array();
 	var $post_data;
+	var $points_number;
 	
 	function create_post_map($id) {
 		$this->post_id = $id;		
@@ -42,7 +43,7 @@ class GMSHC_Post_Map
 		$point = array();
 		foreach ($address_list as $id => $address){
 			$new_point = new GMSHC_Point();
-			if($new_point->create_point($address,$ltlg_list[$id],$title_list[$id],$desc_list[$id],$icon_list[$id],$thumb_list[$id],$this->post_id,false)) {
+			if($new_point->create_point($address,$ltlg_list[$id],$title_list[$id],$desc_list[$id],$icon_list[$id],$thumb_list[$id],$this->post_id)) {
 				array_push($new_points_array,$new_point);
 			}
 			else return false;			 
@@ -60,6 +61,7 @@ class GMSHC_Post_Map
 	
 	function load_data(){
 		$this->points = gmshc_get_points($this->post_id);
+		$this->points_number = count($this->points);
 		$this->post_data = get_post_meta($this->post_id,'google-map-sc',true);
 	}
 	

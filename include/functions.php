@@ -1,40 +1,84 @@
 <?php 
 /**
  * Google Map Shortcode 
- * Version: 2.1
+ * Version: 2.2
  * Author: Alain Gonzalez
  * Author URI: http://web-argument.com/
 */
 
-function gmshc_generate_map($map_points, $width, $height, $zoom) {				
+/**
+  * Generating Map 
+  *
+  */  
+function gmshc_generate_map($map_points, $atts) {
 	
-	  $canvas = "canvas_".wp_generate_password(4, false);
-  
-	  $output ='<div id="'.$canvas.'" class = "gmsc" style="width:'.$width.'px; height:'.$height.'px; margin:10px auto"></div>';
+	  extract($atts);				
+	  if ($canvas == "") $canvas = "canvas_".wp_generate_password(4, false);
+
+	  $output ='<div id="'.$canvas.'" class = "gmsc" style="width:'.$width.'px; height:'.$height.'px; ';
+	  switch ($align) {
+		  case "left" :		  
+	  	  $output .= 'float:left; margin:'.$margin.'px;"';
+		  break;
+		  case "right" :		  
+	  	  $output .= 'float:right; margin:'.$margin.'px;"';
+		  break;
+		  case "center" :		  
+	  	  $output .= 'clear:both; overflow:hidden; margin:'.$margin.'px auto;"';
+		  break;	  
+	  }
+
+	  $output .= "></div>";
 	  $output .= "<script type=\"text/javascript\">\n";
-		  
-	  $output .= "var map_".$canvas.";\n";		
 	  $output .= "var map_points_".$canvas." =  new Array();\n";
 	  
 	  $i = 0;
 	  			  
-	  foreach ($map_points as $point){	  
+	  foreach ($map_points as $point){	
+	  
+	  	  $post_categories = wp_get_post_categories( $point->post_id );  
+		  $terms = implode(",",$post_categories);
 		  
-		  list($lat,$long) = explode(",",$point->ltlg);		  
+		  list($lat,$lng) = explode(",",$point->ltlg);		  
 		  $output .= "map_points_".$canvas."[".$i."] = \n";
 		  $output .= "{\"address\":\"".$point->address."\",\n";
 		  $output .= "\"lat\":\"".$lat."\",\n";
-		  $output .= "\"long\":\"".$long."\",\n";
+		  $output .= "\"lng\":\"".$lng."\",\n";
 		  $output .= "\"info\":\"".gmshc_get_windowhtml($point)."\",\n";
+		  $output .= "\"cat\":\"".$terms."\",\n";
 		  $output .= "\"icon\":\"".$point->icon."\"};\n";
 		  $i ++;
 		  
 	  }	  
-	  $output .= "addLoadEvent(function(){\n";
-	  $output .= "gmshc_render(\"".$canvas."\",map_points_".$canvas.", ".$zoom.");\n";	
-	  $output .= "});\n";
-	  $output .= "</script>\n";		
-  
+	  
+	  $output .= "var options_".$canvas." = {\n";
+	  $output .= "'zoom':".$zoom.",\n";
+	  $output .= "'markers':map_points_".$canvas.",\n";
+	  $output .= "'mapContainer':'".$canvas."',\n";
+	  $output .= "'focusType':'".$focus_type."',\n";			  
+	  $output .= "'type':'".$type."',\n";
+	  
+	  switch ($focus) {
+		case "all" :  
+		$output .= "'circle':true,\n";
+		break;
+		case "0" : 
+		break;
+		default:
+		$output .= "'focusPoint':".($focus-1).",\n";
+	  }  
+	    
+	  $output .= "'animateMarkers':".$animate.",\n";
+	  $output .= "'interval':'".$interval."'\n";
+	  $output .= "};\n"; 
+		  
+	  $output .= "var map_".$canvas." = new gmshc.Map(options_".$canvas.");\n";
+	  $output .= "var trigger_".$canvas." = function(){map_".$canvas.".init()};\n";
+	  $output .= "gmshc.addLoadEvent(trigger_".$canvas.");\n";  
+	  $output .= "</script>\n";	
+	
+	  $output = apply_filters('gmshc_generate_map',$output,$map_points,$atts);
+	    
 	  return $output;
 }
 
@@ -42,14 +86,6 @@ function gmshc_generate_map($map_points, $width, $height, $zoom) {
 /**
  * Get the html info
  *  
- * Allows a plugin to replace the html that would otherwise be returned. The
- * filter is 'gmshc_get_windowhtml' and passes the point.
-
- * add_filter('gmshc_get_windowhtml','default_html',1,2);
- * 
- * function default_html($windowhtml,$point){
- * 	return "this is the address".$point->address;
- * }
  */
  
 function gmshc_get_windowhtml(&$point) {
@@ -67,7 +103,7 @@ function gmshc_get_windowhtml(&$point) {
 	$point_title = $point->title;
 	if (($point->post_id) > 0)	$point_link = get_permalink($point->post_id);
 	else $point_link = "";
-	$point_img_url = ($point->thumbnail != "")? $point->thumbnail : gmshc_post_thumb($point->post_id);
+	$point_img_url = ($point->thumbnail != "")? $point->thumbnail : gmshc_post_img($point->post_id);
 	$point_excerpt = gmshc_get_excerpt($post_id);
 	$point_description = ($point->description != "") ? $point->description : $point_excerpt;
 	$point_address = $point->address;
@@ -119,21 +155,18 @@ function gmshc_all_post_thumb($the_parent){
 		endforeach;		
 	endif;
 
-	return $images_url;
- 
+	return $images_url; 
 }
-
-
 
 /**
  * Get the thumbnail from post
  */
-function gmshc_post_thumb($the_parent){
+function gmshc_post_img($the_parent,$size = 'thumbnail'){
 	
 	if( function_exists('has_post_thumbnail') && has_post_thumbnail($the_parent)) {
 	    $thumbnail_id = get_post_thumbnail_id( $the_parent );
 		if(!empty($thumbnail_id))
-		$img = wp_get_attachment_image_src( $thumbnail_id, 'thumbnail' );	
+		$img = wp_get_attachment_image_src( $thumbnail_id, $size );	
 	} else {
 	$attachments = get_children( array(
 										'post_parent' => $the_parent, 
@@ -144,12 +177,11 @@ function gmshc_post_thumb($the_parent){
 										'numberposts' => 1) );
 	if($attachments == true) :
 		foreach($attachments as $id => $attachment) :
-			$img = wp_get_attachment_image_src($id, 'thumbnail');			
+			$img = wp_get_attachment_image_src($id, $size);			
 		endforeach;		
 	endif;
 	}
-	if (isset($img[0])) return $img[0];
- 
+	if (isset($img[0])) return $img[0]; 
 }
 
 /**
@@ -204,8 +236,8 @@ function gmshc_deploy_icons(){
 		}
 	}
 	?>
-		<div class="gmshc_label">
-        	<strong><?php _e("Marker: "); ?></strong><?php _e("Select by clicking on the images"); ?>
+        <div class="gmshc_label">
+        	<?php _e("Select the marker by clicking on the images"); ?>
         </div>	   
 		<div id="gmshc_icon_cont">
         <input type="hidden" name="default_icon" value="<?php echo $default_icon ?>" id="default_icon" />			

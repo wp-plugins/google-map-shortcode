@@ -1,7 +1,7 @@
 <?php
 /**
  * Google Map Shortcode 
- * Version: 2.1
+ * Version: 2.2
  * Author: Alain Gonzalez
  * Author URI: http://web-argument.com/
 */
@@ -16,7 +16,7 @@ class GMSHC_Point {
 	var $thumbnail;
 	var $post_id;
 
-    function create_point($address,$ltlg,$title,$description,$icon,$thumbnail,$post_id,$check = true){ 
+    function create_point($address,$ltlg,$title,$description,$icon,$thumbnail,$post_id,$check = false){ 
 
 		if(empty($address)) return false;
 		if ($check)	{
