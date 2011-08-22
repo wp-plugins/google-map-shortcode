@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=suppo
 Tags: google maps, shortcode, map, maps, categories, widget, post map, point, marker, list, location, address, images, geocoder, google maps, animation
 Requires at least: 2.5
 Tested up to: 3.2.1
-Stable tag: 2.2
+Stable tag: 2.2.1
 
 Real Friendly integration of Google Map instances into your blogs. The plugin allows to display multiple maps on your pages. 
 == Description ==
@@ -43,6 +43,10 @@ Special Features:
 5. Insert/Show map.
 
 == Changelog ==  
+
+= 2.2.1 =
+ * allow_url_fopen exception added.
+ * get excerpt bug fixed.
 
 = 2.2 =
  * Map type added.	
@@ -89,9 +93,8 @@ Special Features:
  
 == Upgrade Notice ==
 
-= 2.2 =
-This new version includes markers focus and animations and improves the performance.
-__Note:__ Before upgrade save the custom HTML info because the new version will overwrite it.
+= 2.2.1 =
+Upgrade is recommended to handled allow_url_fopen exception.
 
 == How to use ==
 Visit the [How To Use](http://web-argument.com/google-map-shortcode-how-to-use/) section.

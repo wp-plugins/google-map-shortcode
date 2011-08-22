@@ -1,7 +1,7 @@
 <?php 
 /**
  * Google Map Shortcode 
- * Version: 2.2
+ * Version: 2.2.1
  * Author: Alain Gonzalez
  * Author URI: http://web-argument.com/
 */
@@ -104,7 +104,7 @@ function gmshc_get_windowhtml(&$point) {
 	if (($point->post_id) > 0)	$point_link = get_permalink($point->post_id);
 	else $point_link = "";
 	$point_img_url = ($point->thumbnail != "")? $point->thumbnail : gmshc_post_img($point->post_id);
-	$point_excerpt = gmshc_get_excerpt($post_id);
+	$point_excerpt = gmshc_get_excerpt($point->post_id);
 	$point_description = ($point->description != "") ? $point->description : $point_excerpt;
 	$point_address = $point->address;
 
@@ -339,8 +339,22 @@ function gmshc_point ($address,$ltlg){
 	    
 		$options = get_gmshc_options();
 		$api_url = "http://maps.googleapis.com/maps/api/geocode/json?".$type."=".$query."&sensor=false&language=".$options['language'];
-
-		$json_answ = file_get_contents($api_url);
+              
+		$json_answ = @file_get_contents($api_url);
+ 
+		if (empty($json_answ)) {
+			if(function_exists('curl_init')){	
+				$ch = curl_init();
+				curl_setopt ($ch, CURLOPT_URL, $api_url);
+				curl_setopt ($ch, CURLOPT_RETURNTRANSFER, 1);
+				$json_answ = curl_exec($ch);
+				curl_close($ch);
+			} else {		
+				echo "<div class='error'><p>".__("The Point can't be added, <strong>php_curl.dll</strong> is not installed on your server and <strong>allow_url_fopen</strong> is disabled.")."</p></div>";
+				return false;						
+			}
+		}	
+		 
 		$answ_arr = json_decode($json_answ,true);
 		
 		if (isset($answ_arr["status"]) && $answ_arr["status"] == "OK"){		

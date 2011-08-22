@@ -14,9 +14,9 @@
 		$(".gmshc_icon,.gmshc_thumb").click(function(){
 			gmshc_switchImg($(this)); 
 		}).mouseover(function(){
-			$(this).css({"border":"solid #cccccc 1px"})
+			$(this).css({"border":"solid #BBBBBB 1px"})
 		}).mouseout(function(){
-			$(this).css({"border":"solid #ffffff 1px"})
+			$(this).css({"border":"solid #F9F9F9 1px"})
 		});         
 		
 		$(".insert_map").click(function(){		

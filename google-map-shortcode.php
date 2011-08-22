@@ -3,7 +3,7 @@
 Plugin Name: Google Map Shortcode
 Plugin URI: http://web-argument.com/google-map-shortcode-2-0-total-solution/
 Description: Include Google Map in your blogs with just one click. 
-Version: 2.2
+Version: 2.2.1
 Author: Alain Gonzalez
 Author URI: http://web-argument.com/
 */
@@ -390,7 +390,7 @@ function gmshc_tab_process(){
                             <strong><?php _e("Thumbnail: "); ?></strong><?php _e("If you want to attach an image to the point you need to upload it first to the post gallery"); ?>
                         </div> 
                     <?php  } ?> 
-                    <p align="left"><a class="button" href = "?post_id=<?php echo $post_id ?>&type=image" title="Upload Images"><?php _e("Upload Images") ?></a></p>                  
+                    <p align="left"><a class="button" href = "?post_id=<?php echo $post_id ?>&type=image" title="Upload Images"><?php _e("Upload Images") ?></a></p>                    <p align="left"><input class="button-primary" value="<?php _e("Add Point") ?>" name="add_point" type="submit"></p> 
 				</td>
             </tr>
             <?php if ($post_points->points_number > 0) { ?>            
@@ -467,8 +467,8 @@ function gmshc_tab_process(){
             </table>
             
         	<p>
-                <input class="button-primary" value="<?php _e("Add Point") ?>" name="add_point" type="submit"> 
-                <?php if ($post_points->points_number > 0) { ?>
+            	<?php if ($post_points->points_number > 0) { ?>
+                	<input class="button-primary" value="<?php _e("Add Point") ?>" name="add_point" type="submit">                
 					<input class="button-primary insert_map" value="<?php _e('Insert Map'); ?>" type="button" \>
 					<?php echo $post_points->points_number.__(" Points Added") ?>                    
                 <?php } ?>
@@ -485,7 +485,7 @@ function gmshc_tab_process(){
                 <th><?php _e("Marker"); ?></th>
                 <th><?php _e("Thumbnail"); ?></th>
                 <th><?php _e("Title/Description"); ?></th>
-                <th><?php _e("Address/LtLg"); ?></th>
+                <th width="140"><?php _e("Address/LtLg"); ?></th>
                 </tr>
                 </thead>
                 <tbody class="media-item-info">   

@@ -1,10 +1,14 @@
 /**
  * Google Map Shortcode 
- * Version: 2.1
+ * Version: 2.2.1
  * Author: Alain Gonzalez
  * Author URI: http://web-argument.com/
 */
 
+body {
+	background-color: #F9F9F9 !important;
+}
+ 
 #gmshc_icon_cont {
 	width:578px;  
 	height:126px; 
@@ -26,7 +30,7 @@
 	cursor:pointer;
 	margin:1px; 
 	padding:1px;
-	border:solid 1px #ffffff;
+	border:solid 1px #F9F9F9;
 	cursor:pointer;
 	text-align:center;
 }
@@ -44,7 +48,7 @@
 
 .gmshc_selected {
 	border:solid #CCC 1px !important;
-	background-color:#EEE;
+	background-color:#BBBBBB;
 }
 
 .gmshc_label {
