@@ -1,21 +1,43 @@
 <?php
 /*
 Plugin Name: Google Map Shortcode
-Plugin URI: http://web-argument.com/google-map-shortcode-2-0-total-solution/
+Plugin URI: http://web-argument.com/google-map-shortcode-wordpress-plugin/
 Description: Include Google Map in your blogs with just one click. 
-Version: 2.2.1
+Version: 2.2.2
 Author: Alain Gonzalez
 Author URI: http://web-argument.com/
 */
 
+/*  Copyright 2011  Alain Gonzalez-Garcia  (email : alaingoga@gmail.com)
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License, version 2, as 
+    published by the Free Software Foundation.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+*/
+
 define('GMSC_PLUGIN_DIR', WP_PLUGIN_DIR."/".dirname(plugin_basename(__FILE__)));
 define('GMSC_PLUGIN_URL', WP_PLUGIN_URL."/".dirname(plugin_basename(__FILE__)));
-define('GMSHC_VERSION_CURRENT','2.2');
+define('GMSHC_VERSION_CURRENT','2.2.2');
 define('GMSHC_VERSION_CHECK','2.2');
 
 require(GMSC_PLUGIN_DIR."/include/functions.php");
 require(GMSC_PLUGIN_DIR."/include/class.gmshc_point.php");
 require(GMSC_PLUGIN_DIR."/include/class.gmshc_post_points.php");
+
+add_action( 'admin_init', 'gmshc_init' );
+
+function gmshc_init(){
+	load_plugin_textdomain( 'google-map-sc', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
+}
 
 /**
  * Default Options
@@ -128,7 +150,6 @@ add_shortcode('google-map-sc', 'gmshc_sc');
 
 function gmshc_sc($atts) {
 	
-	global $post;
 	$options = get_gmshc_options();	
 	
 	$width = $options['width'];
@@ -145,12 +166,6 @@ function gmshc_sc($atts) {
 	$animate = $options['animate'];	
 	$focus_type = $options['focus_type'];		
 
-	// First Point in the post
-	$address_meta = get_post_meta($post -> ID, 'google-map-sc-address');
-	$point_meta = get_post_meta($post -> ID, 'google-map-sc-latlng');			
-	
-	$the_address = isset($address_meta[0]) ? $address_meta[0] : '';
-	$point = isset($point_meta[0]) ? $point_meta[0] : '';
 	$the_items = array();	
 	
 	$final_atts = shortcode_atts(array(
@@ -224,7 +239,7 @@ function gmshc_sc($atts) {
 		//Generate Map form points   
 		$output = gmshc_generate_map($map_points, $final_atts);					
     } else { 
-		$output = __("There is not points to locate on the map");
+		$output = __("There is not points to locate on the map","google-map-sc");
 	}
 
 	return $output;	
@@ -242,7 +257,7 @@ function gmshc_media_buttons($admin = true)
 
 	$media_upload_iframe_src = get_option('siteurl').'/wp-admin/media-upload.php?post_id=$uploading_iframe_ID';
 
-	$iframe_title = __('Google Map Shortcode');
+	$iframe_title = __('Google Map Shortcode','google-map-sc');
 
 	echo "<a class=\"thickbox\" href=\"media-upload.php?post_id={$post_ID}&amp;tab=gmshc&amp;TB_iframe=true&amp;height=500&amp;width=680\" title=\"$iframe_title\"><img src=\"".GMSC_PLUGIN_URL."/images/marker.png\" alt=\"$iframe_title\" /></a>";
 	
@@ -260,10 +275,10 @@ function gmshc_tab_process(){
 	$post_id = $_REQUEST["post_id"];
 	$custom_fieds = get_post_custom($post_id);
 	
-	$address = isset($_REQUEST['new_address'])? stripslashes($_REQUEST['new_address']) : "";
-	$ltlg = isset($_REQUEST['new_ltlg'])?$_REQUEST['new_ltlg'] : "";
-	$title = isset($_REQUEST['new_title'])? stripslashes($_REQUEST['new_title']) : get_the_title($post_id);
-	$description = isset($_REQUEST['new_description'])? stripslashes($_REQUEST['new_description']) : "";
+	$address = isset($_REQUEST['new_address'])? gmshc_clean_string($_REQUEST['new_address']) : "";
+	$ltlg = isset($_REQUEST['new_ltlg'])? $_REQUEST['new_ltlg'] : "";
+	$title = isset($_REQUEST['new_title'])? gmshc_clean_string($_REQUEST['new_title']) : get_the_title($post_id);
+	$description = isset($_REQUEST['new_description'])? gmshc_clean_string($_REQUEST['new_description']) : "";
 	$icon = isset($_REQUEST['default_icon'])?stripslashes($_REQUEST['default_icon']) : "";
 	$selected_thumbnail = isset($_REQUEST['selected_thumbnail'])? stripslashes($_REQUEST['selected_thumbnail']) : "";
 
@@ -298,29 +313,30 @@ function gmshc_tab_process(){
 				$post_points -> add_point($new_point);
 			}
 			else 
-				echo "<div class='error'><p>".__("The Address can't be located.")."</p></div>";
+				echo "<div class='error'><p>".__("The Address can't be located.","google-map-sc")."</p></div>";
 	}
 
-	else if (!empty($update_point)) {
-	
+	else if (!empty($update_point)) {	
 		if ( $post_points -> update_points($address_list,$ltlg_list,$title_list,$desc_list,$icon_list,$thumb_list))
-			echo "<div class='updated'><p>".__("The Point was updated.")."</p></div>";
-	    else echo "<div class='error'><p>".__("The Points can't be updated.")."</p></div>";
+			echo "<div class='updated'><p>".__("The Point was updated.","google-map-sc")."</p></div>";
+	    else echo "<div class='error'><p>".__("The Points can't be updated.","google-map-sc")."</p></div>";
 	}
 	
 	else if ($del_point != "") {
 		if($post_points -> delete_point($del_point))		
-		echo "<div class='updated'><p>".__("The Point was deleted.")."</p></div>";
+		echo "<div class='updated'><p>".__("The Point was deleted.","google-map-sc")."</p></div>";
 	}	
 
 	?>
     
     <script type="text/javascript" src="<?php echo GMSC_PLUGIN_URL ?>/js/gmshc-admin.js"></script>
     <?php gmshc_head() ?>
-    <link href="<?php echo GMSC_PLUGIN_URL ?>/styles/gmshc-admin-styles.css" rel="stylesheet" type="text/css"/>
-    
-        <div style="width:620px; margin:10px auto">
+    <link href="<?php echo GMSC_PLUGIN_URL ?>/styles/gmshc-admin-styles.css" rel="stylesheet" type="text/css"/>        
         
+        <?php media_upload_header() ?>
+       
+        <div style="width:620px; margin:10px auto">
+       
         <?php echo gmshc_plugin_menu(); ?>
     
         <form  action="#" method="post">
@@ -336,12 +352,12 @@ function gmshc_tab_process(){
            <table width="620" border="0" cellspacing="5" cellpadding="5">
             <tr>
                 <td colspan="2">
-                <h3 class="gmshc_editor"><?php _e("Add New Point"); ?></h3>
+                <h3 class="gmshc_editor"><?php _e("Add New Point","google-map-sc"); ?></h3>
                 </td>
            </tr>  
             <tr>
                 <td align="right" valign="top">
-                <strong><?php _e("Title"); ?></strong>
+                <strong><?php _e("Title","google-map-sc"); ?></strong>
                 </td>
 				<td valign="top">    
 				<input name="new_title"  size="55" id="new_title" value="<?php echo $title ?>" />
@@ -349,7 +365,7 @@ function gmshc_tab_process(){
             </tr> 
             <tr>
                 <td align="right" valign="top">
-                <strong><?php _e("Description"); ?></strong>
+                <strong><?php _e("Description","google-map-sc"); ?></strong>
                 </td>
 				<td valign="top">    
 				<textarea name="new_description" cols="50" rows="2" id="new_description"></textarea>
@@ -357,7 +373,7 @@ function gmshc_tab_process(){
             </tr> 			
             <tr>
                 <td align="right" valign="top">
-                <strong><?php _e("Full Address"); ?></strong>
+                <strong><?php _e("Full Address","google-map-sc"); ?></strong>
                 </td>
 				<td valign="top">    
 				<textarea name="new_address" cols="50" rows="2" id="new_address"></textarea>
@@ -375,7 +391,7 @@ function gmshc_tab_process(){
 					if (count($thumbnail_list) > 0) { 
 					?>
                         <div class="gmshc_label">
-                            <?php _e("Select the thumbnail by clicking on the images"); ?>
+                            <?php _e("Select the thumbnail by clicking on the images","google-map-sc"); ?>
                         </div>
                         <div id="gmshc_thumb_cont">
                         <input type="hidden" name="selected_thumbnail" value="<?php echo $default_icon ?>" id="selected_thumbnail" />
@@ -387,39 +403,39 @@ function gmshc_tab_process(){
                         </div>
 					<?php } else { ?>
                         <div class="gmshc_label">
-                            <strong><?php _e("Thumbnail: "); ?></strong><?php _e("If you want to attach an image to the point you need to upload it first to the post gallery"); ?>
+                            <strong><?php _e("Thumbnail: ","google-map-sc"); ?></strong><?php _e("If you want to attach an image to the point you need to upload it first to the post gallery","google-map-sc"); ?>
                         </div> 
                     <?php  } ?> 
-                    <p align="left"><a class="button" href = "?post_id=<?php echo $post_id ?>&type=image" title="Upload Images"><?php _e("Upload Images") ?></a></p>                    <p align="left"><input class="button-primary" value="<?php _e("Add Point") ?>" name="add_point" type="submit"></p> 
+                    <p align="left"><a class="button" href = "?post_id=<?php echo $post_id ?>&type=image" title="Upload Images"><?php _e("Upload Images","google-map-sc") ?></a></p>                    <p align="left"><input class="button-primary" value="<?php _e("Add Point","google-map-sc") ?>" name="add_point" type="submit"></p> 
 				</td>
             </tr>
             <?php if ($post_points->points_number > 0) { ?>            
             <tr>
                 <td colspan="2">
-                <h3 class="gmshc_editor"><?php _e("Map Configuration"); ?></h3>
+                <h3 class="gmshc_editor"><?php _e("Map Configuration","google-map-sc"); ?></h3>
                 </td>
             </tr>  
             <tr>
-                <td align="right"><?php _e("Width"); ?></td>
+                <td align="right"><?php _e("Width","google-map-sc"); ?></td>
                 <td valign="top"><input name="width" type="text" id="width" size="10" value = "<?php echo $width ?>"/></td>
             </tr>  
             <tr>
-                <td align="right"><?php _e("Height"); ?></td>
+                <td align="right"><?php _e("Height","google-map-sc"); ?></td>
                 <td valign="top"><input name="height" type="text" id="height" size="10" value = "<?php echo $height ?>" /></td>
             </tr>
             <tr>
-              <td align="right"><strong><?php _e("Margin") ?></strong></td>
+              <td align="right"><strong><?php _e("Margin","google-map-sc") ?></strong></td>
               <td><input name="margin" id="margin" type="text" size="6" value="<?php echo $margin ?>" /></td>
             </tr>  
             <tr>
-              <td align="right"><strong><?php _e("Align") ?></strong></td>
+              <td align="right"><strong><?php _e("Align","google-map-sc") ?></strong></td>
               <td>
-                  <input name="align" type="radio" id="aleft" value="left" <?php echo ($align == "left" ? "checked = 'checked'" : "") ?> /> <?php _e("left") ?>
-                  <input name="align" type="radio" id="acenter" value="center" <?php echo ($align == "center" ? "checked = 'checked'" : "") ?> /> <?php _e("center") ?>
-                  <input name="align" type="radio" id="aright" value="right" <?php echo ($align == "right" ? "checked = 'checked'" : "") ?> /> <?php _e("right") ?>        
+                  <input name="align" type="radio" id="aleft" value="left" <?php echo ($align == "left" ? "checked = 'checked'" : "") ?> /> <?php _e("left","google-map-sc") ?>
+                  <input name="align" type="radio" id="acenter" value="center" <?php echo ($align == "center" ? "checked = 'checked'" : "") ?> /> <?php _e("center","google-map-sc") ?>
+                  <input name="align" type="radio" id="aright" value="right" <?php echo ($align == "right" ? "checked = 'checked'" : "") ?> /> <?php _e("right","google-map-sc") ?>        
             </tr>            
             <tr>
-              <td align="right"><?php _e("Zoom") ?></td>
+              <td align="right"><?php _e("Zoom","google-map-sc") ?></td>
               <td>              
               <select name="zoom" id="zoom">              
                   <?php for ($i = 0; $i <= 20; $i ++){ ?>
@@ -428,38 +444,38 @@ function gmshc_tab_process(){
               </select>         
             </tr> 
             <tr>
-              <td align="right"><?php _e("Maps Type") ?></td>
+              <td align="right"><?php _e("Maps Type","google-map-sc") ?></td>
               <td>
                   <select name="type" id="type">
-                      <option value="ROADMAP" <?php if ($type == "ROADMAP") echo "selected" ?>><?php _e("ROADMAP - Displays a normal street map") ?></option>
-                      <option value="SATELLITE" <?php if ($type == "SATELLITE") echo "selected" ?>><?php _e("SATELLITE - Displays satellite images") ?></option>
-                      <option value="TERRAIN" <?php if ($type == "TERRAIN") echo "selected" ?>><?php _e("TERRAIN - Displays maps with physical features such as terrain and vegetation") ?></option>
-                      <option value="HYBRID" <?php if ($type == "HYBRID") echo "selected" ?>><?php _e("HYBRID - Displays a transparent layer of major streets on satellite images") ?></option>
+                      <option value="ROADMAP" <?php if ($type == "ROADMAP") echo "selected" ?>><?php _e("ROADMAP - Displays a normal street map","google-map-sc") ?></option>
+                      <option value="SATELLITE" <?php if ($type == "SATELLITE") echo "selected" ?>><?php _e("SATELLITE - Displays satellite images","google-map-sc") ?></option>
+                      <option value="TERRAIN" <?php if ($type == "TERRAIN") echo "selected" ?>><?php _e("TERRAIN - Displays maps with physical features such as terrain and vegetation","google-map-sc") ?></option>
+                      <option value="HYBRID" <?php if ($type == "HYBRID") echo "selected" ?>><?php _e("HYBRID - Displays a transparent layer of major streets on satellite images","google-map-sc") ?></option>
                   </select>
               </td>        
             </tr>  
             <tr>
-              <td align="right"><?php _e("Focus") ?></td>
+              <td align="right"><?php _e("Focus","google-map-sc") ?></td>
               <td>
                   <select name="focus" id="focus">
-                      <option value="0" <?php if ($focus == 0) echo "selected" ?>><?php _e("None") ?></option>
+                      <option value="0" <?php if ($focus == 0) echo "selected" ?>><?php _e("None","google-map-sc") ?></option>
                       <?php if ($post_points->points_number > 1) { ?>
-                      <option value="all" <?php if ($focus == "all") echo "selected" ?>><?php _e("All") ?></option>
+                      <option value="all" <?php if ($focus == "all") echo "selected" ?>><?php _e("All","google-map-sc") ?></option>
                       <?php } ?>
                       <?php for ($i = 1; $i <= $post_points->points_number; $i ++){ ?>
                       	<?php $number = $i; ?>
                       	<option value="<?php echo $number ?>" <?php if ($focus == $number) echo "selected" ?>><?php echo $number ?></option>
                       <?php } ?>
                   </select>
-                  <em><?php _e("Select the point to be focused after loading the map") ?></em>
+                  <em><?php _e("Select the point to be focused after loading the map","google-map-sc") ?></em>
               </td>        
             </tr> 
             <tr>
-              <td align="right" valign="top"><?php _e("Focus Type") ?></td>
+              <td align="right" valign="top"><?php _e("Focus Type","google-map-sc") ?></td>
               <td>
               <select name="focus_type" id="focus_type">
-                 <option value="open" <?php echo ($focus_type == "open" ? "selected" : "") ?> ><?php _e("Open Markers") ?></option>
-                 <option value="center" <?php echo ($focus_type == "center" ? "selected" : "") ?> ><?php _e("Center Markers") ?></option>
+                 <option value="open" <?php echo ($focus_type == "open" ? "selected" : "") ?> ><?php _e("Open Markers","google-map-sc") ?></option>
+                 <option value="center" <?php echo ($focus_type == "center" ? "selected" : "") ?> ><?php _e("Center Markers","google-map-sc") ?></option>
               </select>
               </td>        
             </tr>                                   
@@ -468,9 +484,9 @@ function gmshc_tab_process(){
             
         	<p>
             	<?php if ($post_points->points_number > 0) { ?>
-                	<input class="button-primary" value="<?php _e("Add Point") ?>" name="add_point" type="submit">                
-					<input class="button-primary insert_map" value="<?php _e('Insert Map'); ?>" type="button" \>
-					<?php echo $post_points->points_number.__(" Points Added") ?>                    
+                	<input class="button-primary" value="<?php _e("Add Point","google-map-sc") ?>" name="add_point" type="submit">                
+					<input class="button-primary insert_map" value="<?php _e("Insert Map","google-map-sc"); ?>" type="button" \>
+					<?php echo $post_points->points_number.__(" Points Added","google-map-sc") ?>                    
                 <?php } ?>
                 
             </p>
@@ -482,10 +498,11 @@ function gmshc_tab_process(){
             <table class="widefat" cellspacing="0">
                 <thead>
                 <tr>
-                <th><?php _e("Marker"); ?></th>
-                <th><?php _e("Thumbnail"); ?></th>
-                <th><?php _e("Title/Description"); ?></th>
-                <th width="140"><?php _e("Address/LtLg"); ?></th>
+                <th><?php _e("#"); ?></th>
+                <th><?php _e("Marker","google-map-sc"); ?></th>
+                <th><?php _e("Thumbnail","google-map-sc"); ?></th>
+                <th><?php _e("Title/Description","google-map-sc"); ?></th>
+                <th width="140"><?php _e("Address/LtLg","google-map-sc"); ?></th>
                 </tr>
                 </thead>
                 <tbody class="media-item-info">   
@@ -495,29 +512,30 @@ function gmshc_tab_process(){
 				foreach ($post_points->points as $point ) {				 
 				?>                     
                     <tr>
+                      <td><?php echo ($i + 1)  ?></td>	
                       <td>
-                      	<img src="<?php echo $point->icon ?>" atl="<?php _e("Icon") ?>" />
+                      	<img src="<?php echo $point->icon ?>" atl="<?php _e("Icon","google-map-sc") ?>" />
                         <input name="icon[]" type="hidden" id="icon_<?php echo $i ?>" size="30" value = "<?php echo $point->icon ?>"/>
                       </td>                    
                       <td>
                       	<div class="gmshc_thumb gmshc_selected">
                         <?php if ($point->thumbnail != "") { ?>						       
-                      	<img src="<?php echo $point->thumbnail ?>" atl="<?php _e("Thumbnail") ?>" width = "40" height="40" />
+                      	<img src="<?php echo $point->thumbnail ?>" atl="<?php _e("Thumbnail","google-map-sc") ?>" width = "40" height="40" />
                         <input name="thumb[]" type="hidden" id="thumb_<?php echo $i ?>" size="30" value = "<?php echo $point->thumbnail ?>"/> 
                          <?php } ?>
                          </div>                  
                       </td>
                       <td>
 						<input name="title[]" type="text" id="title_<?php echo $i ?>" size="40" value = "<?php echo $point->title ?>"/>
-                        <textarea name="desc[]" cols="40" rows="2" id="desc_<?php echo $i ?>"><?php echo $point->description ?></textarea>							
+                        <textarea name="desc[]" cols="30" rows="2" id="desc_<?php echo $i ?>"><?php echo $point->description ?></textarea>							
                       </td>
                       <td>
 						<input name="ltlg[]" type="hidden" id="ltlg_<?php echo $i ?>" size="30" value = "<?php echo $point->ltlg ?>"/>
                         <textarea name="addr[]" cols="30" rows="2" id="addr_<?php echo $i ?>" style="display:none"><?php echo $point->address ?></textarea>
                         <p><?php echo $point->address ?></p>	
                         <div>
-                        <input class="button" value="<?php _e("Update"); ?>" name="update" type="submit"> 
-                        <a href="?post_id=<?php echo $post_id ?>&tab=gmshc&delp=<?php echo $i ?>" class="delete_point" onclick="if(confirm('<?php _e("You will not be able to roll back deletion. Are you sure?") ?>')) return true; else return false"><?php _e("Delete"); ?></a>
+                        <input class="button" value="<?php _e("Update","google-map-sc"); ?>" name="update" type="submit"> 
+                        <a href="?post_id=<?php echo $post_id ?>&tab=gmshc&delp=<?php echo $i ?>" class="delete_point" onclick="if(confirm('<?php _e("You will not be able to roll back deletion. Are you sure?","google-map-sc") ?>')) return true; else return false"><?php _e("Delete","google-map-sc"); ?></a>
                         </div>
                       </td>
                     </tr>
@@ -528,7 +546,7 @@ function gmshc_tab_process(){
                 </tbody> 	    
             </table>
         
-   	    <p><input class="button-primary insert_map" value="<?php _e("Insert Map"); ?>" type="button" \> <a class="button" href="#gmshc_map" id="gmshc_show" show="<?php _e("Show Map") ?>" hide="<?php _e("Hide Map") ?>"><?php _e("Show Map") ?></a></p>        
+   	    <p><input class="button-primary insert_map" value="<?php _e("Insert Map","google-map-sc"); ?>" type="button" \> <a class="button" href="#gmshc_map" id="gmshc_show" show="<?php _e("Show Map","google-map-sc") ?>" hide="<?php _e("Hide Map","google-map-sc") ?>"><?php _e("Show Map","google-map-sc") ?></a></p>        
         </div>
         <div id="gmshc_map" style="height:1px; overflow:hidden;">
         <?php echo do_shortcode("[google-map-sc id=".$post_id." width=600 height=420 type=".$type." focus=".$focus."]"); ?>
@@ -574,7 +592,7 @@ function gmshc_options_page() {
 
 	<div class="wrap">   
 	
-	<h2><?php _e("Google Map Shortcode Settings") ?></h2>
+	<h2><?php _e("Google Map Shortcode Settings","google-map-sc") ?></h2>
 
 	<?php echo gmshc_plugin_menu(); ?>
 	
@@ -626,7 +644,7 @@ function gmshc_options_page() {
 		   $upload = wp_upload_bits($filename, NULL, file_get_contents($_FILES["datafile"]["tmp_name"]));
 
 			if ( ! empty($upload['error']) ) {
-				$errorString = sprintf(__('Could not write file %1$s (%2$s)'), $filename, $upload['error']);
+				$errorString = sprintf(__('Could not write file %1$s (%2$s)','google-map-sc'), $filename, $upload['error']);
 				echo "<div class='error'><p><strong>".$errorString."</strong></p></div>";
 			}  else {		
 				array_unshift($upload_icons,$upload['url']);
@@ -635,7 +653,7 @@ function gmshc_options_page() {
 			}
 		
 		} else {
-			echo "<div class='error'><p><strong>".__("Please upload a valid file")."</strong></p></div>";
+			echo "<div class='error'><p><strong>".__("Please upload a valid file","google-map-sc")."</strong></p></div>";
 		}
 	}
 
@@ -660,32 +678,32 @@ function gmshc_options_page() {
 	
 	<form method="POST" name="options" target="_self" enctype="multipart/form-data">
 	
-	<h3><?php _e("Maps Default Configuration") ?></h3>
+	<h3><?php _e("Maps Default Configuration","google-map-sc") ?></h3>
 	
-	<p><?php _e("The shortcode attributes overwrites these options.") ?></p>
+	<p><?php _e("The shortcode attributes overwrites these options.","google-map-sc") ?></p>
 	
     <table width="80%" border="0" cellspacing="10" cellpadding="0">
       <tr>
-        <td width="200" align="right" height="40"><strong><?php _e("Width") ?></strong></td>
+        <td width="200" align="right" height="40"><strong><?php _e("Width","google-map-sc") ?></strong></td>
         <td><input name="width" type="text" size="6" value="<?php echo $width ?>" /></td>
       </tr>
       <tr>
-        <td align="right"><strong><?php _e("Height") ?></strong></td>
+        <td align="right"><strong><?php _e("Height","google-map-sc") ?></strong></td>
         <td><input name="height" type="text" size="6" value="<?php echo $height ?>" /></td>
       </tr>
       <tr>
-        <td align="right"><strong><?php _e("Margin") ?></strong></td>
+        <td align="right"><strong><?php _e("Margin","google-map-sc") ?></strong></td>
         <td><input name="margin" type="text" size="6" value="<?php echo $margin ?>" /></td>
       </tr>  
       <tr>
-        <td align="right"><strong><?php _e("Align") ?></strong></td>
+        <td align="right"><strong><?php _e("Align","google-map-sc") ?></strong></td>
         <td>
-        	<input name="align" type="radio" value="left" <?php echo ($align == "left" ? "checked = 'checked'" : "") ?> /> <?php _e("left") ?>
-            <input name="align" type="radio" value="center" <?php echo ($align == "center" ? "checked = 'checked'" : "") ?> /> <?php _e("center") ?>
-            <input name="align" type="radio" value="right" <?php echo ($align == "right" ? "checked = 'checked'" : "") ?> /> <?php _e("right") ?>        
+        	<input name="align" type="radio" value="left" <?php echo ($align == "left" ? "checked = 'checked'" : "") ?> /> <?php _e("left","google-map-sc") ?>
+            <input name="align" type="radio" value="center" <?php echo ($align == "center" ? "checked = 'checked'" : "") ?> /> <?php _e("center","google-map-sc") ?>
+            <input name="align" type="radio" value="right" <?php echo ($align == "right" ? "checked = 'checked'" : "") ?> /> <?php _e("right","google-map-sc") ?>        
       </tr>          
       <tr>
-        <td align="right"><strong><?php _e("Zoom") ?></strong></td>
+        <td align="right"><strong><?php _e("Zoom","google-map-sc") ?></strong></td>
         <td>
         <select name="zoom" id="zoom">
             <?php for ($i = 0; $i <= 20; $i ++){ ?>
@@ -694,76 +712,76 @@ function gmshc_options_page() {
         </select>         
       </tr>  
       <tr>
-        <td align="right"><strong><?php _e("Maps Default Type") ?></strong></td>
+        <td align="right"><strong><?php _e("Maps Type","google-map-sc") ?></strong></td>
         <td>
         	<select name="type">
-        		<option value="ROADMAP" <?php if ($type == "ROADMAP") echo "selected" ?>><?php _e("ROADMAP - Displays a normal street map") ?></option>
-            	<option value="SATELLITE" <?php if ($type == "SATELLITE") echo "selected" ?>><?php _e("SATELLITE - Displays satellite images") ?></option>
-                <option value="TERRAIN" <?php if ($type == "TERRAIN") echo "selected" ?>><?php _e("TERRAIN - Displays maps with physical features such as terrain and vegetation") ?></option>
-                <option value="HYBRID" <?php if ($type == "HYBRID") echo "selected" ?>><?php _e("HYBRID - Displays a transparent layer of major streets on satellite images") ?></option>
+        		<option value="ROADMAP" <?php if ($type == "ROADMAP") echo "selected" ?>><?php _e("ROADMAP - Displays a normal street map","google-map-sc") ?></option>
+            	<option value="SATELLITE" <?php if ($type == "SATELLITE") echo "selected" ?>><?php _e("SATELLITE - Displays satellite images","google-map-sc") ?></option>
+                <option value="TERRAIN" <?php if ($type == "TERRAIN") echo "selected" ?>><?php _e("TERRAIN - Displays maps with physical features such as terrain and vegetation","google-map-sc") ?></option>
+                <option value="HYBRID" <?php if ($type == "HYBRID") echo "selected" ?>><?php _e("HYBRID - Displays a transparent layer of major streets on satellite images","google-map-sc") ?></option>
             </select>
         </td>        
       </tr>      
       <tr>
-        <td align="right" valign="top"><strong><?php _e("Select Language") ?></strong></td>
+        <td align="right" valign="top"><strong><?php _e("Select Language","google-map-sc") ?></strong></td>
         <td>  
         <?php 
         $lang_array = array(
-							"ar"=>__("ARABIC"),
-							"eu"=>__("BASQUE"),
-							"bg"=>__("BULGARIAN"),
-							"bn"=>__("BENGALI"),
-							"ca"=>__("CATALAN"),
-							"cs"=>__("CZECH"),
-							"da"=>__("DANISH"),
-							"de"=>__("GERMAN"),
-							"el"=>__("GREEK"),
-							"en"=>__("ENGLISH"),
-							"en-AU"=>__("ENGLISH (AUSTRALIAN)"),
-							"en-GB"=>__("ENGLISH (GREAT BRITAIN)"),
-							"es"=>__("SPANISH"),
-							"eu"=>__("BASQUE"),
-							"fa"=>__("FARSI"),
-							"fi"=>__("FINNISH"),
-							"fil"=>__("FILIPINO"),
-							"fr"=>__("FRENCH"),
-							"gl"=>__("GALICIAN"),
-							"gu"=>__("GUJARATI"),
-							"hi"=>__("HINDI"),
-							"hr"=>__("CROATIAN"),
-							"hu"=>__("HUNGARIAN"),
-							"id"=>__("INDONESIAN"),
-							"it"=>__("ITALIAN"),
-							"iw"=>__("HEBREW"),
-							"ja"=>__("JAPANESE"),
-							"kn"=>__("KANNADA"),
-							"ko"=>__("KOREAN"),
-							"lt"=>__("LITHUANIAN"),
-							"lv"=>__("LATVIAN"),
-							"ml"=>__("MALAYALAM"),
-							"mr"=>__("MARATHI"),
-							"nl"=>__("DUTCH"),
-							"no"=>__("NORWEGIAN"),
-							"or"=>__("ORIYA"),
-							"pl"=>__("POLISH"),
-							"pt"=>__("PORTUGUESE"),
-							"pt-BR"=>__("PORTUGUESE (BRAZIL)"),
-							"pt-PT"=>__("PORTUGUESE (PORTUGAL)"),
-							"ro"=>__("ROMANIAN"),
-							"ru"=>__("RUSSIAN"),
-							"sk"=>__("SLOVAK"),
-							"sl"=>__("SLOVENIAN"),
-							"sr"=>__("SERBIAN"),
-							"sv"=>__("SWEDISH"),
-							"tl"=>__("TAGALOG"),
-							"ta"=>__("TAMIL"),
-							"te"=>__("TELUGU"),
-							"th"=>__("THAI"),
-							"tr"=>__("TURKISH"),
-							"uk"=>__("UKRAINIAN"),
-							"vi"=>__("VIETNAMESE"),
-							"zh-CN"=>__("CHINESE (SIMPLIFIED)"),
-							"zh-TW"=>__("CHINESE (TRADITIONAL)")
+							"ar"=>__("ARABIC","google-map-sc"),
+							"eu"=>__("BASQUE","google-map-sc"),
+							"bg"=>__("BULGARIAN","google-map-sc"),
+							"bn"=>__("BENGALI","google-map-sc"),
+							"ca"=>__("CATALAN","google-map-sc"),
+							"cs"=>__("CZECH","google-map-sc"),
+							"da"=>__("DANISH","google-map-sc"),
+							"de"=>__("GERMAN","google-map-sc"),
+							"el"=>__("GREEK","google-map-sc"),
+							"en"=>__("ENGLISH","google-map-sc"),
+							"en-AU"=>__("ENGLISH (AUSTRALIAN)","google-map-sc"),
+							"en-GB"=>__("ENGLISH (GREAT BRITAIN)","google-map-sc"),
+							"es"=>__("SPANISH","google-map-sc"),
+							"eu"=>__("BASQUE","google-map-sc"),
+							"fa"=>__("FARSI","google-map-sc"),
+							"fi"=>__("FINNISH","google-map-sc"),
+							"fil"=>__("FILIPINO","google-map-sc"),
+							"fr"=>__("FRENCH","google-map-sc"),
+							"gl"=>__("GALICIAN","google-map-sc"),
+							"gu"=>__("GUJARATI","google-map-sc"),
+							"hi"=>__("HINDI","google-map-sc"),
+							"hr"=>__("CROATIAN","google-map-sc"),
+							"hu"=>__("HUNGARIAN","google-map-sc"),
+							"id"=>__("INDONESIAN","google-map-sc"),
+							"it"=>__("ITALIAN","google-map-sc"),
+							"iw"=>__("HEBREW","google-map-sc"),
+							"ja"=>__("JAPANESE","google-map-sc"),
+							"kn"=>__("KANNADA","google-map-sc"),
+							"ko"=>__("KOREAN","google-map-sc"),
+							"lt"=>__("LITHUANIAN","google-map-sc"),
+							"lv"=>__("LATVIAN","google-map-sc"),
+							"ml"=>__("MALAYALAM","google-map-sc"),
+							"mr"=>__("MARATHI","google-map-sc"),
+							"nl"=>__("DUTCH","google-map-sc"),
+							"no"=>__("NORWEGIAN","google-map-sc"),
+							"or"=>__("ORIYA","google-map-sc"),
+							"pl"=>__("POLISH","google-map-sc"),
+							"pt"=>__("PORTUGUESE","google-map-sc"),
+							"pt-BR"=>__("PORTUGUESE (BRAZIL)","google-map-sc"),
+							"pt-PT"=>__("PORTUGUESE (PORTUGAL)","google-map-sc"),
+							"ro"=>__("ROMANIAN","google-map-sc"),
+							"ru"=>__("RUSSIAN","google-map-sc"),
+							"sk"=>__("SLOVAK","google-map-sc"),
+							"sl"=>__("SLOVENIAN","google-map-sc"),
+							"sr"=>__("SERBIAN","google-map-sc"),
+							"sv"=>__("SWEDISH","google-map-sc"),
+							"tl"=>__("TAGALOG","google-map-sc"),
+							"ta"=>__("TAMIL","google-map-sc"),
+							"te"=>__("TELUGU","google-map-sc"),
+							"th"=>__("THAI","google-map-sc"),
+							"tr"=>__("TURKISH","google-map-sc"),
+							"uk"=>__("UKRAINIAN","google-map-sc"),
+							"vi"=>__("VIETNAMESE","google-map-sc"),
+							"zh-CN"=>__("CHINESE (SIMPLIFIED)","google-map-sc"),
+							"zh-TW"=>__("CHINESE (TRADITIONAL)","google-map-sc")
                                                 
         ); 
         ?> 
@@ -775,22 +793,22 @@ function gmshc_options_page() {
         </td>
       </tr>       
       <tr>
-        <td align="right" valign="top"><strong><?php _e("Circle") ?></strong></td>
+        <td align="right" valign="top"><strong><?php _e("Circle","google-map-sc") ?></strong></td>
         
-        <td><input name="focus" type="checkbox" value="all" <?php if ($focus == "all") echo "checked = \"checked\"" ?> /> <?php _e(" Check if you want to focus all the map's points automatically with an interval of <br /><br />") ?><input name="interval" type="text" size="6" value="<?php echo $interval ?>" /> <?php _e("milliseconds.") ?></td>
+        <td><input name="focus" type="checkbox" value="all" <?php if ($focus == "all") echo "checked = \"checked\"" ?> /> <?php _e(" Check if you want to focus all the map's points automatically with an interval of <br /><br />","google-map-sc") ?><input name="interval" type="text" size="6" value="<?php echo $interval ?>" /> <?php _e("milliseconds.","google-map-sc") ?></td>
       </tr>
       <tr>
-        <td align="right" valign="top"> <strong><?php _e("Focus Type") ?></strong></td>
+        <td align="right" valign="top"> <strong><?php _e("Focus Type","google-map-sc") ?></strong></td>
         <td>
         <select name="focus_type" id="focus_type">
-           <option value="open" <?php echo ($focus_type == "open" ? "selected" : "") ?> ><?php _e("Open Markers") ?></option>
-           <option value="center" <?php echo ($focus_type == "center" ? "selected" : "") ?> ><?php _e("Center Markers") ?></option>
+           <option value="open" <?php echo ($focus_type == "open" ? "selected" : "") ?> ><?php _e("Open Markers","google-map-sc") ?></option>
+           <option value="center" <?php echo ($focus_type == "center" ? "selected" : "") ?> ><?php _e("Center Markers","google-map-sc") ?></option>
         </select>
         </td>        
       </tr>        
       <tr>
-        <td align="right" valign="top"> <strong><?php _e("Animation") ?></strong></td>
-        <td><input name="animate" type="checkbox" value="true" <?php if ($animate) echo "checked = \"checked\"" ?> /> <?php _e(" Check if you want to animate the markes.") ?></td>        
+        <td align="right" valign="top"> <strong><?php _e("Animation","google-map-sc") ?></strong></td>
+        <td><input name="animate" type="checkbox" value="true" <?php if ($animate) echo "checked = \"checked\"" ?> /> <?php _e(" Check if you want to animate the markes.","google-map-sc") ?></td>        
       </tr>        
     </table> 
          
@@ -798,7 +816,7 @@ function gmshc_options_page() {
     <input type="submit" name="Submit" value="Update" class="button-primary" />
     </p>
     
-    <h3 style="padding-top:30px; margin-top:30px; border-top:1px solid #CCCCCC;"><?php _e("Markers") ?></h3>
+    <h3 style="padding-top:30px; margin-top:30px; border-top:1px solid #CCCCCC;"><?php _e("Markers","google-map-sc") ?></h3>
       
     <table width="80%" border="0" cellspacing="10" cellpadding="0">             
       <tr>
@@ -810,7 +828,7 @@ function gmshc_options_page() {
       </tr>
       <tr>
         <td align="left" valign="top" colspan="2">
-            <?php _e("To include new icons just specify the file location:") ?><br />
+            <?php _e("To include new icons just specify the file location:","google-map-sc") ?><br />
             <input type="file" name="datafile" size="40" /> <input type="submit" name="upload" value="Upload" class="button" />
         </td>
       </tr> 
@@ -820,19 +838,19 @@ function gmshc_options_page() {
     <input type="submit" name="Submit" value="Update" class="button-primary" />
     </p>
     
-    <h3 style="padding-top:30px; margin-top:30px; border-top:1px solid #CCCCCC;"><?php _e("Info Windows") ?></h3>
+    <h3 style="padding-top:30px; margin-top:30px; border-top:1px solid #CCCCCC;"><?php _e("Info Windows","google-map-sc") ?></h3>
     
-    <p><?php _e("This is the html of the Info Window opened from the markers.") ?></p>
+    <p><?php _e("This is the html of the Info Window opened from the markers.","google-map-sc") ?></p>
 
     <div id="gmshc_html">
         <div id="gmshc_previews">
-            <p><strong><?php _e("Previews") ?></strong></p> 
+            <p><strong><?php _e("Previews","google-map-sc") ?></strong></p> 
             <div id="gmshc_html_previews">       
             <?php echo gmshc_defaul_windowhtml(); ?>
             </div>
         </div>
         <div id="gmshc_html_cont">
-            <p><strong><?php _e("Custom Html") ?></strong></p>
+            <p><strong><?php _e("Custom Html","google-map-sc") ?></strong></p>
             <textarea name="windowhtml" cols="60" rows="12" id="windowhtml">
             <?php  
             if  (empty($windowhtml)) echo gmshc_defaul_windowhtml(); 
@@ -844,45 +862,45 @@ function gmshc_options_page() {
         </div>        
     </div>
     
-    <p><?php _e("The following tags can be used.") ?></p>    
+    <p><?php _e("The following tags can be used.","google-map-sc") ?></p>    
     <table width="80%" border="0" cellspacing="10" cellpadding="0">
       <tr>
         <td width="60" align="right"><strong>%title%</strong></td>
-        <td><?php _e("Custom title of the point") ?></td>
+        <td><?php _e("Custom title of the point","google-map-sc") ?></td>
       </tr>
       <tr>
          <td align="right"><strong>%link%</strong></td>
-        <td><?php _e("Permanet Link of the post where the point is attached") ?></td>
+        <td><?php _e("Permanet Link of the post where the point is attached","google-map-sc") ?></td>
       </tr>
       <tr>
         <td align="right"><strong>%thubnail%</strong></td>
-        <td><?php _e("Thubnail attached to the point") ?></td>
+        <td><?php _e("Thubnail attached to the point","google-map-sc") ?></td>
       </tr>
       <tr>
         <td align="right"><strong>%description%</strong></td>
-        <td><?php _e("Description of the point") ?></td>
+        <td><?php _e("Description of the point","google-map-sc") ?></td>
       </tr>      
       <tr>
         <td align="right"><strong>%excerpt%</strong></td>
-        <td><?php _e("Excerpt of the post where the point is attached") ?></td>
+        <td><?php _e("Excerpt of the post where the point is attached","google-map-sc") ?></td>
       </tr>  
       <tr>
         <td align="right"><strong>%address%</strong></td>
-        <td><?php _e("The address of this point") ?></td>
+        <td><?php _e("The address of this point","google-map-sc") ?></td>
       </tr>
       <tr>
         <td align="right"><strong>%open_map%</strong></td>
-        <td><?php _e("Open this point on Google Map") ?></td>
+        <td><?php _e("Open this point on Google Map","google-map-sc") ?></td>
       </tr> 
       <tr>
         <td align="right"><strong>%width%</strong></td>
-        <td><?php _e("Info Html width") ?></td>
+        <td><?php _e("Info Html width","google-map-sc") ?></td>
       </tr>           
     </table>
 
 
     <p class="submit">
-    <input type="submit" name="Submit" value="Update" class="button-primary" /><input type="submit" name="Restore_Default" value="<?php _e("Restore Default") ?>" class="button" />
+    <input type="submit" name="Submit" value="Update" class="button-primary" /><input type="submit" name="Restore_Default" value="<?php _e("Restore Default","google-map-sc") ?>" class="button" />
     </p>
     </form>
     
@@ -897,7 +915,7 @@ function gmshc_options_page() {
  * Adding media tab
  */
 function gmshc_media_menu($tabs) {
-$newtab = array('gmshc' => __('Google Map Shortcode', 'gmshc'));
+$newtab = array('gmshc' => __('Google Map Shortcode', 'google-map-sc'));
 return array_merge($tabs, $newtab);
 }
 
@@ -906,11 +924,11 @@ add_filter('media_upload_tabs', 'gmshc_media_menu');
 function gmshc_plugin_menu(){ 
 
    $links_arr = array(
-   						array("text"=>__("Plugin Page"),"url"=>"http://web-argument.com/google-map-shortcode-wordpress-plugin/"),
-						array("text"=>__("How To Use"),"url"=>"http://web-argument.com/google-map-shortcode-how-to-use/"),
-						array("text"=>__("Shortcode Reference"),"url"=>"http://web-argument.com/google-map-shortcode-reference/"),						
-						array("text"=>__("Examples"),"url"=>"http://web-argument.com/google-map-shortcode-wordpress-plugin/#examples"),
-						array("text"=>__("Donate"),"url"=>"https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=support%40web%2dargument%2ecom&lc=US&item_name=Web%2dArgument%2ecom&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted")
+   						array("text"=>__("Plugin Page","google-map-sc"),"url"=>"http://web-argument.com/google-map-shortcode-wordpress-plugin/"),
+						array("text"=>__("How To Use","google-map-sc"),"url"=>"http://web-argument.com/google-map-shortcode-how-to-use/"),
+						array("text"=>__("Shortcode Reference","google-map-sc"),"url"=>"http://web-argument.com/google-map-shortcode-reference/"),						
+						array("text"=>__("Examples","google-map-sc"),"url"=>"http://web-argument.com/google-map-shortcode-wordpress-plugin/#examples"),
+						array("text"=>__("Donate","google-map-sc"),"url"=>"https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=support%40web%2dargument%2ecom&lc=US&item_name=Web%2dArgument%2ecom&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted")
 						);
 						
    $output = "<p align='center' style='font-size:14px;'>";

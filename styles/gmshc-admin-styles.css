@@ -1,14 +1,10 @@
 /**
  * Google Map Shortcode 
- * Version: 2.2.1
+ * Version: 2.2.2
  * Author: Alain Gonzalez
- * Author URI: http://web-argument.com/
+ * Plugin URI: http://web-argument.com/google-map-shortcode-wordpress-plugin/
 */
 
-body {
-	background-color: #F9F9F9 !important;
-}
- 
 #gmshc_icon_cont {
 	width:578px;  
 	height:126px; 
@@ -80,4 +76,20 @@ body {
 h3.gmshc_editor{
 	padding:5px;
 	margin:0;
+}
+
+body#media-upload ul#sidemenu {
+	font-weight: normal;
+	margin: 0 5px;
+	left: 0;
+	bottom: -1px;
+	float: none;
+	overflow: hidden;
+}
+
+#icon_credit {
+	clear: both;
+	overflow: hidden;
+	margin-left: 436px;
+	padding-top: 10px;
 }

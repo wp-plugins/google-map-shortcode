@@ -1,9 +1,9 @@
 <?php 
 /**
  * Google Map Shortcode 
- * Version: 2.2.1
+ * Version: 2.2.2
  * Author: Alain Gonzalez
- * Author URI: http://web-argument.com/
+ * Plugin URI: http://web-argument.com/google-map-shortcode-wordpress-plugin/
 */
 
 /**
@@ -237,8 +237,7 @@ function gmshc_deploy_icons(){
 	}
 	?>
         <div class="gmshc_label">
-        	<?php _e("Select the marker by clicking on the images"); ?>
-        </div>	   
+        	<?php _e("Select the marker by clicking on the images","google-map-sc"); ?> 	   
 		<div id="gmshc_icon_cont">
         <input type="hidden" name="default_icon" value="<?php echo $default_icon ?>" id="default_icon" />			
 		<?php foreach ($icons_array as $icon){ ?>
@@ -246,7 +245,8 @@ function gmshc_deploy_icons(){
 		  <img src="<?php echo $icon ?>" /> 
 		  </div>
 		<?php } ?>
-		 </div>  	
+		 </div> 
+         <div id="icon_credit"><?php _e("Power By","google-map-sc"); ?> <a href="http://mapicons.nicolasmollet.com" target="_blank"><img src="<?php echo GMSC_PLUGIN_URL ?>/images/miclogo-88x31.gif" /></a></div> 	
 	<?php
 }
 
@@ -316,7 +316,7 @@ function gmshc_save_points($post_id,$points) {
  * http://code.google.com/apis/maps/documentation/geocoding/
  */
  
-function gmshc_point ($address,$ltlg){
+function gmshc_point($address,$ltlg){
 
 	$formatted_address = "";
 	$point = "";
@@ -338,9 +338,9 @@ function gmshc_point ($address,$ltlg){
 	else return false;	
 	    
 		$options = get_gmshc_options();
-		$api_url = "http://maps.googleapis.com/maps/api/geocode/json?".$type."=".$query."&sensor=false&language=".$options['language'];
-              
-		$json_answ = @file_get_contents($api_url);
+		$api_url = "http://maps.googleapis.com/maps/api/geocode/json?".$type."=".urlencode($query)."&sensor=false&language=".$options['language'];
+        
+     	$json_answ = @file_get_contents($api_url);
  
 		if (empty($json_answ)) {
 			if(function_exists('curl_init')){	
@@ -354,22 +354,32 @@ function gmshc_point ($address,$ltlg){
 				return false;						
 			}
 		}	
+		
+		 
 		 
 		$answ_arr = json_decode($json_answ,true);
 		
 		if (isset($answ_arr["status"]) && $answ_arr["status"] == "OK"){		
-			$formatted_address = $answ_arr["results"]["0"]["formatted_address"];
-			$point = $answ_arr["results"]["0"]["geometry"]["location"]["lat"].",".$answ_arr["results"]["0"]["geometry"]["location"]["lng"];
-		}
-			
-	if (!empty($point) && !empty($formatted_address)){
-	
-		$response = array('point'=>$point,'address'=>$formatted_address);
-		
-	}
-	
-	return $response;	
+			$formatted_address = gmshc_clean_string($answ_arr["results"]["0"]["formatted_address"]);
 
+			$point = $answ_arr["results"]["0"]["geometry"]["location"]["lat"].",".$answ_arr["results"]["0"]["geometry"]["location"]["lng"];		
+			
+			if (!empty($point) && !empty($formatted_address)){
+			
+				$response = array('point'=>$point,'address'=>$formatted_address);
+				
+			}
+
+			return $response;
+			
+		} else {
+			return false;
+		}
+
+}
+
+function gmshc_clean_string($str){
+	return htmlentities(html_entity_decode(stripslashes($str),ENT_QUOTES,"UTF-8"),ENT_QUOTES,"UTF-8");
 }
 
 ?>

@@ -1,9 +1,9 @@
 <?php
 /**
  * Google Map Shortcode 
- * Version: 2.2
+ * Version: 2.2.2
  * Author: Alain Gonzalez
- * Author URI: http://web-argument.com/
+ * Plugin URI: http://web-argument.com/google-map-shortcode-wordpress-plugin/
 */
 
 class GMSHC_Post_Map

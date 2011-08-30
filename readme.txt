@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=suppo
 Tags: google maps, shortcode, map, maps, categories, widget, post map, point, marker, list, location, address, images, geocoder, google maps, animation
 Requires at least: 2.5
 Tested up to: 3.2.1
-Stable tag: 2.2.1
+Stable tag: 2.2.2
 
 Real Friendly integration of Google Map instances into your blogs. The plugin allows to display multiple maps on your pages. 
 == Description ==
@@ -27,12 +27,29 @@ Special Features:
 *   You can customize the html of the info window box on the settings.
 *   The plugin is based on Wordpress shortcode and allows many options like: initial zoom, width, height, categories, post ID, specific address, marker and thumbnail.
 
+Plugin Languages:
+
+*	English.
+*   Spanish.
+
+Please contact me [alaingoga at gmail] in order to include your language within the plugin package.
+
 == Installation ==
 
 1. Upload 'Google Map Shortcode' folder to the '/wp-content/plugins/' directory.
 2. Activate the plugin through the 'Plugins' menu in WordPress.
 3. Go to the Google Map Shortcode Options page under settings and save your preferred options.
 4. Using the Google Map editor button insert the address and add the map into your posts/pages.
+
+== Frequently Asked Questions ==
+
+= Can I use a custom marker? =
+
+Yes, the plugin includes some markers images power by [Maps Icons Collection](http://mapicons.nicolasmollet.com) but you can upload your own icon.
+
+= The plugin allows to use address in other languages? =
+
+Yes, you can use different laguages address. 
 
 == Screenshots ==
 
@@ -43,6 +60,10 @@ Special Features:
 5. Insert/Show map.
 
 == Changelog ==  
+
+= 2.2.2 =
+ * Internationalization added.
+ * Special characters bugs fixed.
 
 = 2.2.1 =
  * allow_url_fopen exception added.
@@ -93,8 +114,5 @@ Special Features:
  
 == Upgrade Notice ==
 
-= 2.2.1 =
-Upgrade is recommended to handled allow_url_fopen exception.
-
-== How to use ==
-Visit the [How To Use](http://web-argument.com/google-map-shortcode-how-to-use/) section.
+= 2.2.2 =
+Upgrade is recommended to handled address in different languages.
