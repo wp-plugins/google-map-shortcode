@@ -246,7 +246,7 @@ function gmshc_deploy_icons(){
 		  </div>
 		<?php } ?>
 		 </div> 
-         <div id="icon_credit"><?php _e("Power By","google-map-sc"); ?> <a href="http://mapicons.nicolasmollet.com" target="_blank"><img src="<?php echo GMSC_PLUGIN_URL ?>/images/miclogo-88x31.gif" /></a></div> 	
+         <div id="icon_credit"><?php _e("Powered By","google-map-sc"); ?> <a href="http://mapicons.nicolasmollet.com" target="_blank"><img src="<?php echo GMSC_PLUGIN_URL ?>/images/miclogo-88x31.gif" /></a></div> 	
 	<?php
 }
 

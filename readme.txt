@@ -45,7 +45,7 @@ Please contact me [alaingoga at gmail] in order to include your language within 
 
 = Can I use a custom marker? =
 
-Yes, the plugin includes some markers images power by [Maps Icons Collection](http://mapicons.nicolasmollet.com) but you can upload your own icon.
+Yes, the plugin includes some markers images powered by [Maps Icons Collection](http://mapicons.nicolasmollet.com) but you can upload your own icon.
 
 = The plugin allows to use address in other languages? =
 
