@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=suppo
 Tags: google maps, shortcode, map, maps, categories, widget, post map, point, marker, list, location, address, images, geocoder, google maps, animation
 Requires at least: 2.5
 Tested up to: 3.2.1
-Stable tag: 2.2.2
+Stable tag: 2.2.3
 
 Real Friendly integration of Google Map instances into your blogs. The plugin allows to display multiple maps on your pages. 
 == Description ==
@@ -29,8 +29,9 @@ Special Features:
 
 Plugin Languages:
 
-*	English.
-*   Spanish.
+*	English - default
+*   French - Thanks to [Nicolas Mollet](http://mapicons.nicolasmollet.com)
+*   Spanish - Thanks to [Alain Gonzalez](http://web-argument.com)
 
 Please contact me [alaingoga at gmail] in order to include your language within the plugin package.
 
@@ -45,7 +46,7 @@ Please contact me [alaingoga at gmail] in order to include your language within 
 
 = Can I use a custom marker? =
 
-Yes, the plugin includes some markers images power by [Maps Icons Collection](http://mapicons.nicolasmollet.com) but you can upload your own icon.
+Yes, the plugin includes some markers images powered by [Maps Icons Collection](http://mapicons.nicolasmollet.com) but you can upload your own icon.
 
 = The plugin allows to use address in other languages? =
 
@@ -60,6 +61,10 @@ Yes, you can use different laguages address.
 5. Insert/Show map.
 
 == Changelog ==  
+
+= 2.2.3 =
+ * French language added.
+ * Special characters bugs fixed.
 
 = 2.2.2 =
  * Internationalization added.

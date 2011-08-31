@@ -2,8 +2,8 @@
 /*
 Plugin Name: Google Map Shortcode
 Plugin URI: http://web-argument.com/google-map-shortcode-wordpress-plugin/
-Description: Include Google Map in your blogs with just one click. 
-Version: 2.2.2
+Description: Include Google Maps in your blogs with just one click. 
+Version: 2.2.3
 Author: Alain Gonzalez
 Author URI: http://web-argument.com/
 */
@@ -26,7 +26,7 @@ Author URI: http://web-argument.com/
 
 define('GMSC_PLUGIN_DIR', WP_PLUGIN_DIR."/".dirname(plugin_basename(__FILE__)));
 define('GMSC_PLUGIN_URL', WP_PLUGIN_URL."/".dirname(plugin_basename(__FILE__)));
-define('GMSHC_VERSION_CURRENT','2.2.2');
+define('GMSHC_VERSION_CURRENT','2.2.3');
 define('GMSHC_VERSION_CHECK','2.2');
 
 require(GMSC_PLUGIN_DIR."/include/functions.php");
@@ -150,6 +150,7 @@ add_shortcode('google-map-sc', 'gmshc_sc');
 
 function gmshc_sc($atts) {
 	
+	global $post;
 	$options = get_gmshc_options();	
 	
 	$width = $options['width'];

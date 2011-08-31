@@ -1,7 +1,7 @@
 <?php 
 /**
  * Google Map Shortcode 
- * Version: 2.2.2
+ * Version: 2.2.3
  * Author: Alain Gonzalez
  * Plugin URI: http://web-argument.com/google-map-shortcode-wordpress-plugin/
 */
@@ -127,9 +127,9 @@ function gmshc_get_windowhtml(&$point) {
 
 function gmshc_stripslashes_deep($value)
 {
-    $value = is_array($value) ?
-                array_map('stripslashes_deep', $value) :
-                stripslashes($value);
+    $value = is_array($value) ? 
+                array_map('gmshc_stripslashes_deep', $value) :
+                gmshc_clean_string($value);
 
     return $value;
 }
@@ -246,7 +246,7 @@ function gmshc_deploy_icons(){
 		  </div>
 		<?php } ?>
 		 </div> 
-         <div id="icon_credit"><?php _e("Power By","google-map-sc"); ?> <a href="http://mapicons.nicolasmollet.com" target="_blank"><img src="<?php echo GMSC_PLUGIN_URL ?>/images/miclogo-88x31.gif" /></a></div> 	
+         <div id="icon_credit"><span><?php _e("Powered by","google-map-sc"); ?></span><a href="http://mapicons.nicolasmollet.com" target="_blank"><img src="<?php echo GMSC_PLUGIN_URL ?>/images/miclogo-88x31.gif" /></a></div> 	
 	<?php
 }
 
@@ -271,7 +271,8 @@ function gmshc_get_points($post_id) {
 	} else {
 		
 	/**  checking for old custom fields **/
-	$post_data_address = get_post_meta($post_id,'google-map-sc-address');	
+	$post_data_address = get_post_meta($post_id,'google-map-sc-address');
+	
 	
 	if (count($post_data_address) > 0) {
 		$options = get_gmshc_options();		
@@ -279,7 +280,7 @@ function gmshc_get_points($post_id) {
 		$post_title = get_the_title($post_id);
 		foreach ($post_data_address as $point_address){
 			$point_obj = new GMSHC_Point();
-			if ($point_obj -> create_point($point_address,"",$post_title,"",$default_icon,"",$post_id)){
+			if ($point_obj -> create_point(gmshc_clean_string($point_address),"",$post_title,"",$default_icon,"",$post_id,true)){
 		
 			array_push($post_points,$point_obj);
 			}
@@ -290,7 +291,8 @@ function gmshc_get_points($post_id) {
 	
 	}
 
-	return $post_points;	
+	return $post_points;
+		
 }
 
 
