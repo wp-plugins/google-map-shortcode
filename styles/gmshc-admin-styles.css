@@ -1,6 +1,6 @@
 /**
  * Google Map Shortcode 
- * Version: 2.2.3
+ * Version: 3.0
  * Author: Alain Gonzalez
  * Plugin URI: http://web-argument.com/google-map-shortcode-wordpress-plugin/
 */
@@ -80,18 +80,20 @@ h3.gmshc_editor{
 
 body#media-upload ul#sidemenu {
 	font-weight: normal;
-	margin: 0 5px;
+	margin: 0;
 	left: 0;
 	bottom: -1px;
 	float: none;
 	overflow: hidden;
+	padding:0;
 }
 
 #icon_credit {
 	clear: both;
-	overflow: hidden;
-	margin-left: 422px;
-	padding-top: 10px;
+	margin-left: 417px;
+	padding-top: 3px;
+	width: 167px;
+	float: left;
 }
 
 #icon_credit span{
@@ -99,4 +101,21 @@ body#media-upload ul#sidemenu {
 	float: left;
 	font-style: italic;
 	padding: 12px 5px 0;
+}
+
+#iframe_sc{
+	margin: 0 auto;
+	overflow: hidden;
+	clear: both;
+	display: block;
+}
+
+.gmshc_refresh{
+	display:none;
+}
+
+.endbox {
+	border-bottom:solid #999 1px;
+	padding-bottom:10px;
+	text-align:left;
 }

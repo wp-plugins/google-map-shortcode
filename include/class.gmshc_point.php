@@ -1,13 +1,14 @@
 <?php
 /**
  * Google Map Shortcode 
- * Version: 2.2.3
+ * Version: 2.3
  * Author: Alain Gonzalez
  * Plugin URI: http://web-argument.com/google-map-shortcode-wordpress-plugin/
 */
 
 class GMSHC_Point {
 
+	var $id;
 	var $address;
 	var $ltlg;
 	var $title;
@@ -16,9 +17,8 @@ class GMSHC_Point {
 	var $thumbnail;
 	var $post_id;
 
-    function create_point($address,$ltlg,$title,$description,$icon,$thumbnail,$post_id,$check = false){ 
+    function create_point($id,$address,$ltlg,$title,$description,$icon,$thumbnail,$post_id,$check = false){ 
 
-		if(empty($address)) return false;
 		if ($check)	{
 			$temp_point = gmshc_point($address,$ltlg);
 			if(!$temp_point) {
@@ -32,6 +32,7 @@ class GMSHC_Point {
 			$temp_address = $address;
 			$temp_ltlg = $ltlg;		
 		}
+			$this->id = $id;
 			$this->address = $temp_address;
 			$this->ltlg = $temp_ltlg;
 			$this->title = $title;

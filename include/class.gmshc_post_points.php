@@ -1,7 +1,7 @@
 <?php
 /**
  * Google Map Shortcode 
- * Version: 2.2.3
+ * Version: 3.0
  * Author: Alain Gonzalez
  * Plugin URI: http://web-argument.com/google-map-shortcode-wordpress-plugin/
 */
@@ -10,59 +10,35 @@ class GMSHC_Post_Map
 {
 	var $post_id;
 	var $points = array();
-	var $post_data;
 	var $points_number;
 	
-	function create_post_map($id) {
-		$this->post_id = $id;		
-		$this->load_data();
+	function create_post_map($post_id) {
+		$this->post_id = $post_id;		
 	}
 	
-	function add_point($single_point){
-		 array_unshift($this -> points,$single_point);
-		 $saved = gmshc_save_points($this->post_id,$this -> points);
-		 if($saved) {
-			 $this->load_data();			 
-		 }	
-		 return $saved;
+	function add_point($point){
+		return gmshc_insert_db_point($point);		  
 	}
 
-
-	function delete_point($point_id){
-	
-        unset($this->points[$point_id]);
-		$saved = gmshc_save_points($this->post_id,$this->points);
-		if($saved) {
-		   $this->load_data();			 
-		}
-		return $saved;		
+	function delete_point($id){	
+		return gmshc_delete_db_point($id);		
 	}
 	
-	function update_points($address_list,$ltlg_list,$title_list,$desc_list,$icon_list,$thumb_list){
-		$new_points_array = array();
-		$point = array();
-		foreach ($address_list as $id => $address){
+	function update_point($id_list,$address_list,$ltlg_list,$title_list,$desc_list,$icon_list,$thumb_list){
+	    $i = 0;
+	    foreach($id_list as $id){
 			$new_point = new GMSHC_Point();
-			if($new_point->create_point($address,$ltlg_list[$id],$title_list[$id],$desc_list[$id],$icon_list[$id],$thumb_list[$id],$this->post_id)) {
-				array_push($new_points_array,$new_point);
-			}
-			else return false;			 
+			$new_point -> create_point($id,$address_list[$i],$ltlg_list[$i],$title_list[$i],$desc_list[$i],$icon_list[$i],$thumb_list[$i],$this->post_id);
+			if (!gmshc_update_db_point($new_point)) return false;
+			$i ++;
 		}
-		
-		
-		 $saved = gmshc_save_points($this->post_id,$new_points_array);
-		 if($saved) {
-			 $this->load_data();			 
-		 }
-		 return $saved;
-	}
+		return true;
+	}	
 	
-	
-	
-	function load_data(){
+	function load_points(){
 		$this->points = gmshc_get_points($this->post_id);
 		$this->points_number = count($this->points);
-		$this->post_data = get_post_meta($this->post_id,'google-map-sc',true);
+		return $this->points;
 	}
 	
 }

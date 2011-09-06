@@ -1,6 +1,6 @@
 /**
  * Google Map Shortcode 
- * Version: 2.2.2
+ * Version: 3.0
  * Author: Alain Gonzalez
  * Plugin URI: http://web-argument.com/google-map-shortcode-wordpress-plugin/
 */
@@ -24,17 +24,25 @@
 			parent.tb_remove();			
 		});
 		
-		$("#gmshc_show").click(function(){
+		$(".gmshc_show").click(function(){
 			var mapDiv = $("#gmshc_map");
-			var mapBtn = $(this);
+			var refreshMap = $(".gmshc_refresh");
+			var mapBtn = $(".gmshc_show");
 			if (mapDiv.height() >1) {
-				mapDiv.height("1");				
+				mapDiv.height("0");				
 				mapBtn.text(mapBtn.attr("show"));
+				refreshMap.hide();
+				$("#iframe_sc").hide();
 			} else {
 				mapDiv.height("440");				
-				mapBtn.text(mapBtn.attr("hide"));								
+				mapBtn.text(mapBtn.attr("hide"));
+				refreshMap.show();
+				deploy_map();												
 			}
-		});			
+			return false;
+		});	
+		
+		$(".gmshc_refresh").click(deploy_map);		
 			
 		$("#windowhtml").change(function(){
 			$("#gmshc_html_previews").html($(this).val());			
@@ -43,10 +51,15 @@
 		var winHtml = $("#windowhtml").val();
 		
 		$("#windowhtml").val($.trim(winHtml));
-		
-     	gmshc_update_editor_custom_field();
 	
 	 });
+	 
+	 function deploy_map(){		 
+		urlP = gmshc_generate_sc();
+		var iframeUrl = $("#iframe_url").val()+"map=true&"+urlP[1];
+		$("#iframe_sc").show().attr("src",iframeUrl);
+		$("#gmshc_map").focus();
+	 }
 
 	function gmshc_switchImg(obj) {		
 		var iconSrc = obj.children("img").attr("src");
@@ -60,7 +73,7 @@
 		 
 		var str = gmshc_generate_sc();        
 		var win = window.dialogArguments || opener || parent || top;
-		win.send_to_editor(str);		
+		win.send_to_editor(str[0]);		
    
     }
 	
@@ -95,32 +108,32 @@
 		var defaultFocusType= $("#default_focus_type").val();			
         
         str = "[google-map-sc";
+		urlP = "";
 		if (width != defaultWidth)
 			str += " width=\""+width+"\"";
+			urlP += "width="+width+"&";
 		if (height != defaultHeight)
 			str += " height=\""+height+"\"";
+			urlP += "height="+height+"&";
 		if (margin != defaultMargin)
-			str += " margin=\""+margin+"\"";
+			str += " margin=\""+margin+"\"";			
 		if (align != defaultAlign)
 			str += " align=\""+align+"\"";						
 		if (zoom != defaultZoom)
 			str += " zoom=\""+zoom+"\"";
+			urlP += "zoom="+zoom+"&";
 		if(type != defaultType)
-			str += " type=\""+type+"\"";	
+			str += " type=\""+type+"\"";
+			urlP += "type="+type+"&";	
 		if(focusPoint != defaultFocusPoint)
 			str += " focus=\""+focusPoint+"\"";
+			urlP += "focus="+focusPoint+"&";
 		if(focusType != defaultFocusType)
-			str += " focus_type=\""+focusType+"\"";								
+			str += " focus_type=\""+focusType+"\"";
+			urlP += "focus_type="+focusType;								
 		str +="]";
 		
-		return str; 		
-	}
-	
-	function gmshc_update_editor_custom_field(){
-		var mapData = $("#post_data").val();
-		jQueryParent = parent.jQuery;
-		var gmshcDivPostCustomStuff = jQueryParent("#postcustom input:[value=google-map-sc]").parents("tr");
-		if (gmshcDivPostCustomStuff.length > 0)	jQueryParent("textarea",gmshcDivPostCustomStuff).val(mapData);
+		return [str,urlP]; 		
 	}
     
     function gmshc_delete_point(id,msg){
@@ -136,8 +149,7 @@
         return false;
         }	
     }
-	
-	   
+ 
 	 
 })(jQuery);
 	

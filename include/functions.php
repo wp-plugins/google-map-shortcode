@@ -1,7 +1,7 @@
 <?php 
 /**
  * Google Map Shortcode 
- * Version: 2.2.3
+ * Version: 3.0
  * Author: Alain Gonzalez
  * Plugin URI: http://web-argument.com/google-map-shortcode-wordpress-plugin/
 */
@@ -11,7 +11,7 @@
   *
   */  
 function gmshc_generate_map($map_points, $atts) {
-	
+	 
 	  extract($atts);				
 	  if ($canvas == "") $canvas = "canvas_".wp_generate_password(4, false);
 
@@ -25,26 +25,33 @@ function gmshc_generate_map($map_points, $atts) {
 		  break;
 		  case "center" :		  
 	  	  $output .= 'clear:both; overflow:hidden; margin:'.$margin.'px auto;"';
-		  break;	  
+		  break;
+		  default:
+		  $output .= 'clear:both; overflow:hidden; margin:'.$margin.'px auto;"';
+		  break;		  	  
 	  }
 
 	  $output .= "></div>";
+	  
 	  $output .= "<script type=\"text/javascript\">\n";
 	  $output .= "var map_points_".$canvas." =  new Array();\n";
 	  
 	  $i = 0;
-	  			  
-	  foreach ($map_points as $point){	
+	  		  
+	  foreach ($map_points as $point){	  	 
 	  
 	  	  $post_categories = wp_get_post_categories( $point->post_id );  
-		  $terms = implode(",",$post_categories);
+		  $terms = implode(",",$post_categories);		   	
 		  
 		  list($lat,$lng) = explode(",",$point->ltlg);		  
+		  		  
 		  $output .= "map_points_".$canvas."[".$i."] = \n";
 		  $output .= "{\"address\":\"".$point->address."\",\n";
 		  $output .= "\"lat\":\"".$lat."\",\n";
 		  $output .= "\"lng\":\"".$lng."\",\n";
+		  
 		  $output .= "\"info\":\"".gmshc_get_windowhtml($point)."\",\n";
+		  
 		  $output .= "\"cat\":\"".$terms."\",\n";
 		  $output .= "\"icon\":\"".$point->icon."\"};\n";
 		  $i ++;
@@ -92,19 +99,23 @@ function gmshc_get_windowhtml(&$point) {
     
 	$windowhtml = "";
 	$output = apply_filters('gmshc_get_windowhtml',$windowhtml,$point);
-
+    
 	if ( $output != '' )
 		return $output;	
-
+   
 	$options = get_gmshc_options();	
 	$windowhtml_frame = $options['windowhtml'];	
 
 	$open_map_url = "http://maps.google.com/?q=".urlencode($point->address);
 	$point_title = $point->title;
+	 
 	if (($point->post_id) > 0)	$point_link = get_permalink($point->post_id);
 	else $point_link = "";
+	
 	$point_img_url = ($point->thumbnail != "")? $point->thumbnail : gmshc_post_img($point->post_id);
+	
 	$point_excerpt = gmshc_get_excerpt($point->post_id);
+
 	$point_description = ($point->description != "") ? $point->description : $point_excerpt;
 	$point_address = $point->address;
 
@@ -193,10 +204,12 @@ function gmshc_get_excerpt($post_id) { // Fakes an excerpt if needed
 	$content = $content_post->post_content;
 
 	if ( '' != $content ) {
-
+        
 		$content = strip_shortcodes( $content ); 
 		
-		$content = apply_filters('the_content', $content);
+		//$content = apply_filters('the_content', $content);
+		//wp_die("--");
+		
 		$content = str_replace(']]>', ']]&gt;', $content);
 		$content = strip_tags($content);
 		$excerpt_length = 10;
@@ -237,7 +250,8 @@ function gmshc_deploy_icons(){
 	}
 	?>
         <div class="gmshc_label">
-        	<?php _e("Select the marker by clicking on the images","google-map-sc"); ?> 	   
+        	<?php _e("Select the marker by clicking on the images","google-map-sc"); ?> 
+        </div>    	   
 		<div id="gmshc_icon_cont">
         <input type="hidden" name="default_icon" value="<?php echo $default_icon ?>" id="default_icon" />			
 		<?php foreach ($icons_array as $icon){ ?>
@@ -246,7 +260,8 @@ function gmshc_deploy_icons(){
 		  </div>
 		<?php } ?>
 		 </div> 
-         <div id="icon_credit"><span><?php _e("Powered by","google-map-sc"); ?></span><a href="http://mapicons.nicolasmollet.com" target="_blank"><img src="<?php echo GMSC_PLUGIN_URL ?>/images/miclogo-88x31.gif" /></a></div> 	
+         <div id="icon_credit"><span><?php _e("Powered by","google-map-sc"); ?></span><a href="http://mapicons.nicolasmollet.com" target="_blank"><img src="<?php echo GMSC_PLUGIN_URL ?>/images/miclogo-88x31.gif" /></a>
+         </div> 	
 	<?php
 }
 
@@ -255,7 +270,8 @@ function gmshc_deploy_icons(){
  * Get post points form the post custom field 'google-map-sc'
  */
 function gmshc_get_points($post_id) {
-
+    
+	// check for old custom google-map-sc
 	$post_data = get_post_meta($post_id,'google-map-sc',true);
 	$post_points = array();
 	if($post_data != ""){
@@ -263,53 +279,60 @@ function gmshc_get_points($post_id) {
 		if(is_array($points)){
 			foreach($points as $point){
 				$point_obj = new GMSHC_Point();
-				if ($point_obj -> create_point($point['address'],$point['ltlg'],$point['title'],$point['description'],$point['icon'],$point['thumbnail'],$post_id))
-				array_push($post_points,$point_obj);
+				if ($point_obj -> create_point("",$point['address'],$point['ltlg'],$point['title'],$point['description'],$point['icon'],$point['thumbnail'],$post_id))
+				gmshc_insert_db_point($point_obj);
 			}
 		}
 	
-	} else {
+	} 
 		
-	/**  checking for old custom fields **/
+	/**  checking for old custom fields google-map-sc-address **/
 	$post_data_address = get_post_meta($post_id,'google-map-sc-address');
 	
+	$options = get_gmshc_options();		
+	$default_icon = $options['default_icon'];	
+	$post_title = get_the_title($post_id);	
 	
-	if (count($post_data_address) > 0) {
-		$options = get_gmshc_options();		
-		$default_icon = $options['default_icon'];	
-		$post_title = get_the_title($post_id);
+	if (count($post_data_address) > 0) { 
+	
 		foreach ($post_data_address as $point_address){
-			$point_obj = new GMSHC_Point();
-			if ($point_obj -> create_point(gmshc_clean_string($point_address),"",$post_title,"",$default_icon,"",$post_id,true)){
-		
-			array_push($post_points,$point_obj);
+			$point_obj_address = new GMSHC_Point();
+			if ($point_obj_address -> create_point("",gmshc_clean_string($point_address),"",$post_title,"",$default_icon,"",$post_id,true)){		
+				gmshc_insert_db_point($point_obj_address);
 			}
 		}
-		if (count($post_points) > 0)		
-		gmshc_save_points($post_id,$post_points);
 	}
 	
+	/**  checking for old custom fields google-map-sc-latlng **/
+	$post_data_ltlg = get_post_meta($post_id,'google-map-sc-latlng');
+	
+	if (count($post_data_ltlg) > 0) { 
+	
+		foreach ($post_data_ltlg as $point_ltlg){
+			$point_obj_ltlg = new GMSHC_Point();
+			if ($point_obj_ltlg -> create_point("","",$point_ltlg,$post_title,"",$default_icon,"",$post_id)){		
+				gmshc_insert_db_point($point_obj_ltlg);
+			}
+		}
 	}
+	
+	$db_points = gmshc_get_bd_points($post_id);
+	
+	if (count($db_points)>0){
+	
+		foreach ($db_points as $point){
+			$point_obj = new GMSHC_Point();
 
-	return $post_points;
+			if ($point_obj -> create_point($point['id'],$point['address'],$point['ltlg'],$point['title'],$point['description'],$point['icon'],$point['thumbnail'],$post_id)){	
 		
-}
-
-
-/**
- * Save the json data into the post custom field 'google-map-sc'
- */
-function gmshc_save_points($post_id,$points) {
-	$post_data = get_post_meta($post_id,'google-map-sc',true);
-
-	$new_post_data = json_encode($points);
-
-    if ($post_data == "null")  {
-		delete_post_meta($post_id, 'google-map-sc');
-		return add_post_meta($post_id, 'google-map-sc', $new_post_data, true);
+				array_push($post_points,$point_obj);
+			}
+		}	
 	}
-	else return update_post_meta($post_id,'google-map-sc',$new_post_data, $post_data);
-   	
+	
+	return $post_points;
+
+
 }
 
 
@@ -325,13 +348,15 @@ function gmshc_point($address,$ltlg){
 	$response = false;
 	
 	if (!empty($ltlg)) {
+	
 		$query = $ltlg;
 		$type = "latlng";
+		
 	} else if (!empty($address)) { 
 	
 		$find = array("\n","\r"," ");
 		$replace = array("","","+");					
-		$address = str_replace( $find,$replace, $address);
+		$address = str_replace($find,$replace, $address);
 			
 		$query = $address;
 		$type = "address";
@@ -339,49 +364,185 @@ function gmshc_point($address,$ltlg){
 	
 	else return false;	
 	    
-		$options = get_gmshc_options();
-		$api_url = "http://maps.googleapis.com/maps/api/geocode/json?".$type."=".urlencode($query)."&sensor=false&language=".$options['language'];
-        
-     	$json_answ = @file_get_contents($api_url);
- 
-		if (empty($json_answ)) {
-			if(function_exists('curl_init')){	
-				$ch = curl_init();
-				curl_setopt ($ch, CURLOPT_URL, $api_url);
-				curl_setopt ($ch, CURLOPT_RETURNTRANSFER, 1);
-				$json_answ = curl_exec($ch);
-				curl_close($ch);
-			} else {		
-				echo "<div class='error'><p>".__("The Point can't be added, <strong>php_curl.dll</strong> is not installed on your server and <strong>allow_url_fopen</strong> is disabled.")."</p></div>";
-				return false;						
-			}
-		}	
-		
-		 
-		 
-		$answ_arr = json_decode($json_answ,true);
-		
-		if (isset($answ_arr["status"]) && $answ_arr["status"] == "OK"){		
-			$formatted_address = gmshc_clean_string($answ_arr["results"]["0"]["formatted_address"]);
+	$options = get_gmshc_options();
+	$api_url = "http://maps.googleapis.com/maps/api/geocode/json?".$type."=".urlencode($query)."&sensor=false&language=".$options['language'];
+	
+	$json_answ = @file_get_contents($api_url);
 
-			$point = $answ_arr["results"]["0"]["geometry"]["location"]["lat"].",".$answ_arr["results"]["0"]["geometry"]["location"]["lng"];		
-			
-			if (!empty($point) && !empty($formatted_address)){
-			
-				$response = array('point'=>$point,'address'=>$formatted_address);
-				
-			}
-
-			return $response;
-			
-		} else {
-			return false;
+	if (empty($json_answ)) {
+		if(function_exists('curl_init')){	
+			$ch = curl_init();
+			curl_setopt ($ch, CURLOPT_URL, $api_url);
+			curl_setopt ($ch, CURLOPT_RETURNTRANSFER, 1);
+			$json_answ = curl_exec($ch);
+			curl_close($ch);
+		} else {		
+			echo "<div class='error'><p>".__("The Point can't be added, <strong>php_curl.dll</strong> is not installed on your server and <strong>allow_url_fopen</strong> is disabled.")."</p></div>";
+			return false;						
 		}
+	}	
+	
+	 
+	 
+	$answ_arr = json_decode($json_answ,true);
+	
+	if (isset($answ_arr["status"]) && $answ_arr["status"] == "OK"){		
+		$formatted_address = gmshc_clean_string($answ_arr["results"]["0"]["formatted_address"]);
+
+		$point = $answ_arr["results"]["0"]["geometry"]["location"]["lat"].",".$answ_arr["results"]["0"]["geometry"]["location"]["lng"];		
+		
+		if (!empty($point) && !empty($formatted_address)){
+		
+			$response = array('point'=>$point,'address'=>$formatted_address);
+			
+		}
+
+		return $response;
+		
+	} else {
+		return false;
+	}
 
 }
 
 function gmshc_clean_string($str){
 	return htmlentities(html_entity_decode(stripslashes($str),ENT_QUOTES,"UTF-8"),ENT_QUOTES,"UTF-8");
+}
+
+/**
+ * Save the json data into the post custom field 'google-map-sc' - deprecated after 2.2.3
+ */
+
+function gmshc_insert_db_point($point){
+
+   global $wpdb;
+   
+   $table_name = $wpdb->prefix . "gmshc";
+   if($wpdb->get_var("SHOW TABLES LIKE '$table_name'") != $table_name) {
+	   return false;
+	   
+	} else {
+	   
+		// Checking if point exist
+		$sql = "SELECT * FROM `". $table_name ."` WHERE ltlg = '".$wpdb->escape($point->ltlg)."' AND post_id = '".$point->post_id."';";
+
+		$ltlg_check = $wpdb->get_row($sql, ARRAY_N);
+
+		if (count($ltlg_check) > 0) {
+			return false;
+		}
+		else {
+				
+			$insert = "INSERT INTO `" . $table_name .
+						"` (
+						`address`, 
+						`ltlg`,
+						`post_id`,
+						`time`,
+						`title`,
+						`description`,
+						`icon`,
+						`thumbnail`				
+						) " .
+						"VALUES (
+						'" .$wpdb->escape($point->address). "',
+						'" .$wpdb->escape($point->ltlg) . "',
+						'" .$wpdb->escape($point->post_id) . "',
+						'" .current_time('mysql'). "',
+						'" .$wpdb->escape($point->title) . "',
+						'" .$wpdb->escape($point->description). "',				
+						'" .$wpdb->escape($point->icon). "',
+						'" .$wpdb->escape($point->thumbnail) . "'				
+						);";
+						
+			  $results = $wpdb->query( $insert );
+			  if ($results == 1) return true;
+			  else  return false;
+			  }
+	  
+	  }
+}
+
+function gmshc_update_db_point($point){
+
+   global $wpdb;
+   
+   $table_name = $wpdb->prefix . "gmshc";
+   if($wpdb->get_var("SHOW TABLES LIKE '$table_name'") != $table_name) {
+	   return false;
+	   
+	} else {
+	   
+			$update = "UPDATE `". $table_name ."` SET
+						address = '" .$wpdb->escape($point->address). "', 
+						ltlg = '" .$wpdb->escape($point->ltlg) . "',
+						post_id = '" .$wpdb->escape($point->post_id) . "',
+						time = '" .current_time('mysql'). "',
+						title = '" .$wpdb->escape($point->title) . "',
+						description = '" .$wpdb->escape($point->description). "',
+						icon = '" .$wpdb->escape($point->icon). "',
+						thumbnail = '" .$wpdb->escape($point->thumbnail) . "'				
+						WHERE id = '".$point->id."';";
+		
+			  $results = $wpdb->query( $update );
+			  if ($results == 1) return true;
+			  else  return false;
+ 
+	  }
+}
+
+function gmshc_delete_db_point($id){
+
+   global $wpdb;
+   
+   $table_name = $wpdb->prefix . "gmshc";
+   if($wpdb->get_var("SHOW TABLES LIKE '$table_name'") != $table_name) {
+	   return false;
+	   
+	} else {
+	   
+			$delete = "DELETE FROM `". $table_name ."` WHERE id = '".$id."';";
+			  $results = $wpdb->query( $delete );
+			  if ($results == 1) return true;
+			  else  return false;
+ 
+	  }
+}
+
+function gmshc_get_bd_points($post_id) {
+
+   global $wpdb;
+   
+   $table_name = $wpdb->prefix . "gmshc";
+   
+   if($wpdb->get_var("SHOW TABLES LIKE '$table_name'") != $table_name) {
+	   
+	   if ( defined( 'DB_CHARSET' ) ) $charset = DB_CHARSET;
+	   else $charset = 'utf8';	   
+		  
+	   $sql = "CREATE TABLE " . $table_name . " (
+		  id mediumint(9) NOT NULL AUTO_INCREMENT,
+		  post_id mediumint(9) NOT NULL,
+		  time datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+		  address VARCHAR(200) DEFAULT '' NOT NULL,
+		  ltlg VARCHAR(55) DEFAULT '' NOT NULL,
+		  title text NOT NULL,
+		  description text NOT NULL,
+		  icon text NOT NULL,
+		  thumbnail text NOT NULL,
+		  UNIQUE KEY id (id)
+		) COLLATE utf8_general_ci CHARACTER SET ".$charset.";";
+
+	   require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+	   dbDelta($sql);
+	   
+	} else {		
+		
+		$sql = "SELECT * FROM ". $table_name ." WHERE post_id = ".$post_id;
+		return $wpdb->get_results($sql,ARRAY_A);
+	
+	}
+
 }
 
 ?>

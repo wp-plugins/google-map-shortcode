@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=suppo
 Tags: google maps, shortcode, map, maps, categories, widget, post map, point, marker, list, location, address, images, geocoder, google maps, animation
 Requires at least: 2.5
 Tested up to: 3.2.1
-Stable tag: 2.2.3
+Stable tag: 3.0
 
 Real Friendly integration of Google Map instances into your blogs. The plugin allows to display multiple maps on your pages. 
 == Description ==
@@ -14,13 +14,14 @@ This plugin allows you to include instances of Google Map in your blogs with a s
 
 Special Features:
 
+*   The plugin can handle large number of map points.
+*   Points can be added using address or coordinates.
+*   Addresses in different languages allowed.
 *	The Editor button allows to include points and maps.
 * 	Custom markers allowed.
 *   Based on Google Maps Javascript API Version 3.
 *  	Faster and more applicable to mobile devices.
-* 	Open Google Map in new window.
 * 	Maps in multiple languages.
-* 	Allows to deploy multiples maps in a single page.
 * 	Points under post categories can be included.
 * 	Allows to insert maps into the content and theme files.
 *   The window box opened display part of the content of your posts like: post title, thumbnails, excerpt or a custom title description and thumbnail.
@@ -48,9 +49,22 @@ Please contact me [alaingoga at gmail] in order to include your language within 
 
 Yes, the plugin includes some markers images powered by [Maps Icons Collection](http://mapicons.nicolasmollet.com) but you can upload your own icon.
 
-= The plugin allows to use address in other languages? =
+= The plugin allows using address in other languages? =
 
-Yes, you can use different laguages address. 
+Yes, you can use addresses in different languages.
+
+= The custom fields are needed? =
+
+No, the custom fields are not needed, and it is recommended to delete them after importing the address to the database.
+
+= The custom fields are needed? =
+
+No, the custom fields are not needed, and it is recommended to delete them after importing the address to the database.
+
+= How to use my old custom fields addresses and coordinates? =
+
+When the map is deployed or when the Google Map Shortcode Editor panel is open in the post. The addresses/coordinates attached to the post using custom fields are imported to the database.
+
 
 == Screenshots ==
 
@@ -61,6 +75,11 @@ Yes, you can use different laguages address.
 5. Insert/Show map.
 
 == Changelog ==  
+
+= 3.0 =
+ * Custom field deprecated.
+ * The point's information is saved in the database.
+ * Points based on coordinates included.
 
 = 2.2.3 =
  * French language added.
@@ -116,8 +135,9 @@ Yes, you can use different laguages address.
  
 = 1.0.0 =  
 * Initial release.
+
  
 == Upgrade Notice ==
 
-= 2.2.2 =
-Upgrade is recommended to handled address in different languages.
+= 3.0 =
+Upgrade is recommended to handle large number of points and use addresses in other languages. From this version the custom fields are not needed to be used, all the data will be saved on the database.
