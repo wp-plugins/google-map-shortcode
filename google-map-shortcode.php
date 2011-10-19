@@ -3,7 +3,7 @@
 Plugin Name: Google Map Shortcode
 Plugin URI: http://web-argument.com/google-map-shortcode-wordpress-plugin/
 Description: Include Google Maps in your blogs with just one click.  
-Version: 3.0
+Version: 3.0.1
 Author: Alain Gonzalez
 Author URI: http://web-argument.com/
 */
@@ -26,7 +26,7 @@ Author URI: http://web-argument.com/
 
 define('GMSC_PLUGIN_DIR', WP_PLUGIN_DIR."/".dirname(plugin_basename(__FILE__)));
 define('GMSC_PLUGIN_URL', WP_PLUGIN_URL."/".dirname(plugin_basename(__FILE__)));
-define('GMSHC_VERSION_CURRENT','3.0');
+define('GMSHC_VERSION_CURRENT','3.0.1');
 define('GMSHC_VERSION_CHECK','2.2');
 
 require(GMSC_PLUGIN_DIR."/include/functions.php");
@@ -97,7 +97,7 @@ function gmshc_head() {
 	if(isset($language)) 
 	$gmshc_header .= "&language=".$language;
 	$gmshc_header .="\" type=\"text/javascript\"></script>\n";	
-	$gmshc_header .= "<script type=\"text/javascript\" src=\"".GMSC_PLUGIN_URL."/js/gmshc.2.2.js\"></script>\n";	
+	$gmshc_header .= "<script type=\"text/javascript\" src=\"".GMSC_PLUGIN_URL."/js/gmshc.2.2.1.js\"></script>\n";	
 	$gmshc_header .=  "\n<!-- /Google Map Shortcode Version ".$options['version']."-->\n";		
 		
 	print($gmshc_header);
@@ -688,7 +688,7 @@ function gmshc_options_page() {
 			$newoptions['type'] = isset($_POST['type'])?$_POST['type']:$options['type'];
 			$newoptions['interval'] = isset($_POST['interval'])?$_POST['interval']:$options['interval'];
 			$newoptions['focus'] = isset($_POST['focus'])?$_POST['focus']:"0";
-			$newoptions['animate'] = isset($_POST['animate'])?$_POST['animate']:false;
+			$newoptions['animate'] = isset($_POST['animate'])?$_POST['animate']:"false";
 			$newoptions['focus_type'] = isset($_POST['focus_type'])?$_POST['focus_type']:"open";
 		
 			$newoptions['windowhtml'] = isset($_POST['windowhtml'])? $_POST['windowhtml']:$options['windowhtml'];	
@@ -886,7 +886,7 @@ function gmshc_options_page() {
       </tr>        
       <tr>
         <td align="right" valign="top"> <strong><?php _e("Animation","google-map-sc") ?></strong></td>
-        <td><input name="animate" type="checkbox" value="true" <?php if ($animate) echo "checked = \"checked\"" ?> /> <?php _e(" Check if you want to animate the markes.","google-map-sc") ?></td>        
+        <td><input name="animate" type="checkbox" value="true" <?php if ($animate == "true") echo "checked = \"checked\"" ?> /> <?php _e(" Check if you want to animate the markes.","google-map-sc") ?></td>        
       </tr>        
     </table> 
          

@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=suppo
 Tags: google maps, shortcode, map, maps, categories, widget, post map, point, marker, list, location, address, images, geocoder, google maps, animation
 Requires at least: 2.5
 Tested up to: 3.2.1
-Stable tag: 3.0
+Stable tag: 3.0.1
 
 Real Friendly integration of Google Map instances into your blogs. The plugin allows to display multiple maps on your pages. 
 == Description ==
@@ -75,6 +75,9 @@ When the map is deployed or when the Google Map Shortcode Editor panel is open i
 5. Insert/Show map.
 
 == Changelog ==  
+
+= 3.0.1 =
+ * Animation bug fixed.
 
 = 3.0 =
  * Custom field deprecated.

@@ -1,6 +1,6 @@
 /**
  * Google Map Shortcode 
- * Version: 2.2.2
+ * Version: 3.0.1
  * Author: Alain Gonzalez
  * Plugin URI: http://web-argument.com/google-map-shortcode-wordpress-plugin/
 */
@@ -205,7 +205,7 @@ gmshc.Map.prototype.Center = function(point){
 		    if(this.openWindow != null) this.openWindow.close();
 			var location = this.markers[point];
 			this.map.setCenter(new google.maps.LatLng(location.lat, location.lng));
-			if (this.animateMarkers != null) {
+			if (this.animateMarkers) {
 				this.StopAllAnimations();
 				this.ToggleAnimation(this.markersObj[point],"BOUNCE");
 			}			

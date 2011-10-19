@@ -1,7 +1,7 @@
 <?php 
 /**
  * Google Map Shortcode 
- * Version: 3.0
+ * Version: 3.0.1
  * Author: Alain Gonzalez
  * Plugin URI: http://web-argument.com/google-map-shortcode-wordpress-plugin/
 */
@@ -11,7 +11,7 @@
   *
   */  
 function gmshc_generate_map($map_points, $atts) {
-	 
+
 	  extract($atts);				
 	  if ($canvas == "") $canvas = "canvas_".wp_generate_password(4, false);
 
