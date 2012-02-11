@@ -1,7 +1,7 @@
 <?php 
 /**
  * Google Map Shortcode 
- * Version: 3.1
+ * Version: 3.1.1
  * Author: Alain Gonzalez
  * Plugin URI: http://web-argument.com/google-map-shortcode-wordpress-plugin/
 */
@@ -319,7 +319,7 @@ function gmshc_get_points($post_id) {
 	$post_data_ltlg = get_post_meta($post_id,'google-map-sc-latlng');
 	
 	if (count($post_data_ltlg) > 0) { 
-	print_r($post_data_ltlg);
+
 		foreach ($post_data_ltlg as $point_ltlg){
 			$point_obj_ltlg = new GMSHC_Point();
 			if ($point_obj_ltlg -> create_point("","",$point_ltlg,$post_title,"",$default_icon,"",$post_id)){		
@@ -612,7 +612,7 @@ function gmshc_available_modules(){
 											"copy" => __("Allow more interaction with your maps, including a slideshow with the points images."),
 											"url" => "http://web-argument.com/google-map-shortcode-modules/#slideshow",
 											"image" => GMSC_PLUGIN_URL."/images/slideshow.jpg"
-						 ),
+					),
 					array(
 											"id" => "scroller",
 											"name" => __("Scroller"),

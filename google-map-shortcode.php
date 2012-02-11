@@ -3,7 +3,7 @@
 Plugin Name: Google Map Shortcode
 Plugin URI: http://web-argument.com/google-map-shortcode-wordpress-plugin/
 Description: Include Google Maps in your blogs easily and allow multiple interactions.  
-Version: 3.1
+Version: 3.1.1
 Author: Alain Gonzalez
 Author URI: http://web-argument.com/
 */
@@ -26,7 +26,7 @@ Author URI: http://web-argument.com/
 
 define('GMSC_PLUGIN_DIR', WP_PLUGIN_DIR."/".dirname(plugin_basename(__FILE__)));
 define('GMSC_PLUGIN_URL', WP_PLUGIN_URL."/".dirname(plugin_basename(__FILE__)));
-define('GMSHC_VERSION_CURRENT','3.1');
+define('GMSHC_VERSION_CURRENT','3.2');
 define('GMSHC_VERSION_CHECK','2.2');
 
 require(GMSC_PLUGIN_DIR."/include/functions.php");
@@ -138,7 +138,7 @@ add_action('wp_enqueue_scripts', 'gmshc_enqueue_scripts');
 	$defaul_gmshc_windowhtml .= "<img src='".GMSC_PLUGIN_URL."/images/open.jpg' style='float: right; margin-right:5px'/> \n";
 	$defaul_gmshc_windowhtml .= "<a href='%open_map%' target='_blank' style='font-size:11px; float: right; display:block;'>Open Map</a>\n";
 	$defaul_gmshc_windowhtml .= "</div>\n";
-	$defaul_gmshc_windowhtml .= "<div style='float:left'><a title='%link%' href='%link%'>%thubnail%</div></a>\n";	
+	$defaul_gmshc_windowhtml .= "<div style='float:left'><a title='%link%' href='%link%'>%thubnail%</a></div>\n";	
 	$defaul_gmshc_windowhtml .= "</div>\n";
 	
 	return $defaul_gmshc_windowhtml;
@@ -598,7 +598,8 @@ function gmshc_tab_process(){
                    </a>
                 </p>
                                      
-                <p><?php echo $post_points->points_number." ".__("Points Added","google-map-sc") ?></p>                    
+                <p><?php echo $post_points->points_number." ".__("Points Added","google-map-sc") ?></p>
+                <p><em><?php _e("Click on the icons or thumbnails to edit.","google-map-sc") ?></em></p>                    
             <?php } ?>
             
 			<?php
@@ -606,7 +607,7 @@ function gmshc_tab_process(){
 			rsort($post_points -> points);
             ?>
      
-            <table class="widefat" cellspacing="0">
+            <table class="widefat gmshc_points" cellspacing="0">
                 <thead>
                 <tr>
                 <th><?php _e("#"); ?></th>
@@ -625,27 +626,28 @@ function gmshc_tab_process(){
                     <tr>
                       <td><?php echo ($post_points->points_number - $i) ?></td>	
                       <td>
-                      	<img src="<?php echo $point->icon ?>" atl="<?php _e("Icon","google-map-sc") ?>" />
-                        <input name="icon[]" type="hidden" id="icon_<?php echo $i ?>" size="30" value = "<?php echo $point->icon ?>"/>
-                        <input name="pid[]" type="hidden" id="id_<?php echo $i ?>" size="30" value = "<?php echo $point->id ?>"/>
+                          <div class="gmshc_list_icon" title="<?php _e("Change") ?>">
+                            <img src="<?php echo $point->icon ?>" atl="<?php _e("Icon","google-map-sc") ?>" />
+                            <input name="icon[]" type="hidden" id="icon_<?php echo $i ?>" size="30" value = "<?php echo $point->icon ?>"/>                            
+                          </div>
+                          <input name="pid[]" type="hidden" id="id_<?php echo $i ?>" size="30" value = "<?php echo $point->id ?>"/>
                       </td>                    
                       <td>
-                      	<div class="gmshc_thumb gmshc_selected">
-                        <?php 
- 							$point_thumbnail = "";
-							if ($point->thumbnail != "") {
-								if(is_numeric($point->thumbnail)){
-									$thumb = wp_get_attachment_image_src($point->thumbnail, 'thumbnail');
-									$point_thumbnail = $thumb[0];
-								}else{
-									$point_thumbnail = $point->thumbnail;
-								}
-                        	?>				       
-                            <img src="<?php echo $point_thumbnail ?>" atl="<?php _e("Thumbnail","google-map-sc") ?>" width = "40" height="40" />
-                            <input name="thumb[]" type="hidden" id="thumb_<?php echo $i ?>" size="30" value = "<?php echo $point->thumbnail ?>"/>                        
-                         
-						 <?php } ?>
-                         </div>                  
+                          <div class="gmshc_list_thumb" title="<?php _e("Change") ?>">	
+							<?php 
+                            $point_thumbnail = "";
+                            if ($point->thumbnail != "") {
+                                if(is_numeric($point->thumbnail)){
+                                    $thumb = wp_get_attachment_image_src($point->thumbnail, 'thumbnail');
+                                    $point_thumbnail = $thumb[0];
+                                }else{
+                                    $point_thumbnail = $point->thumbnail;
+                                }
+                            } 
+                            ?>                             		       
+                              <img src="<?php echo $point_thumbnail ?>" atl="<?php _e("Thumbnail","google-map-sc") ?>" width = "40" height="40" />
+                              <input name="thumb[]" type="hidden" id="thumb_<?php echo $i ?>" size="30" value = "<?php echo $point->thumbnail ?>"/>
+                           </div>                  
                       </td>
                       <td>
 						<input name="title[]" type="text" id="title_<?php echo $i ?>" size="33" value = "<?php echo $point->title ?>"/>
@@ -667,7 +669,15 @@ function gmshc_tab_process(){
 				?>          
                 </tbody> 	    
             </table>
-        
+            <div id="gmshc_list_icon_cont">
+            	<div class="gmshc_bx_tl"><span><?php _e("Click to Select")?></span><a href="" class="gmshc_box_close"><?php _e("Close") ?></a></div>
+                <div class="gmshc_bx"></div>                
+            </div>
+            <div id="gmshc_list_thumb_cont">
+            	<div class="gmshc_bx_tl"><span><?php _e("Click to Select")?></span><a href="" class="gmshc_box_close"><?php _e("Close") ?></a></div>
+                <div class="gmshc_bx"></div>
+            </div>
+            
    	    <p><input class="button-primary insert_map" value="<?php _e("Insert Map","google-map-sc"); ?>" type="button" \> 
            <a class="button gmshc_show" href="#gmshc_map" show="<?php _e("Show Map","google-map-sc") ?>" hide="<?php _e("Hide Map","google-map-sc") ?>">
 		   	<?php _e("Show Map","google-map-sc") ?>
@@ -998,20 +1008,19 @@ function gmshc_options_page() {
 
     <div id="gmshc_html">
         <div id="gmshc_previews">
+        <?php 
+            $current_html = gmshc_defaul_windowhtml();
+            if  (!empty($windowhtml)) $current_html = str_replace("\\", "",$windowhtml);
+		?>
             <p><strong><?php _e("Previews","google-map-sc") ?></strong></p> 
             <div id="gmshc_html_previews">       
-            <?php echo gmshc_defaul_windowhtml(); ?>
+            <?php echo $current_html; ?>
             </div>
         </div>
         <div id="gmshc_html_cont">
             <p><strong><?php _e("Custom Html","google-map-sc") ?></strong></p>
             <textarea name="windowhtml" cols="60" rows="12" id="windowhtml">
-            <?php  
-            if  (empty($windowhtml)) echo gmshc_defaul_windowhtml(); 
-            else {
-                echo str_replace("\\", "",$windowhtml);
-            }
-            ?>
+            <?php echo $current_html; ?>
             </textarea>
         </div>        
     </div>

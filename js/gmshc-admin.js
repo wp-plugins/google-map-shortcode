@@ -1,6 +1,6 @@
 /**
  * Google Map Shortcode 
- * Version: 3.1
+ * Version: 3.1.1
  * Author: Alain Gonzalez
  * Plugin URI: http://web-argument.com/google-map-shortcode-wordpress-plugin/
 */
@@ -51,6 +51,55 @@
 		var winHtml = $("#windowhtml").val();
 		
 		$("#windowhtml").val($.trim(winHtml));
+
+		
+		$(".gmshc_list_icon, .gmshc_list_thumb").click(function(){	
+		    $(".gmshc_box_close").trigger("click");	
+			$(this).addClass("gmshc_active");	
+			var pos = $(this).position();			
+			var posLeft = pos.left;			
+			var posTop = pos.top;
+			
+			var mapPos = $("#gmshc_map").position();
+			var mapPosTop = mapPos.top;
+			
+			if ((posTop+200) > mapPosTop){
+				posTop = mapPosTop - 180; 
+			}
+			
+			var elem = "icon";
+			if ($(this).hasClass("gmshc_list_thumb")) {
+				elem = "thumb";
+			}
+			
+			$('#gmshc_list_'+elem+'_cont').show(100,function(){
+				var children = $(".gmshc_bx",this).children(".gmshc_"+elem);
+				if (children.length == 0){				
+					$('#gmshc_'+elem+'_cont')
+						.children(".gmshc_"+elem)
+						.clone()
+						.appendTo('#gmshc_list_'+elem+'_cont .gmshc_bx')
+						.removeClass("gmshc_selected")
+						.click(function(){
+							var imgSrc = $("img",this).attr("src");
+							var attch = imgSrc;
+							if (elem == "thumb") {
+								attch = $("img",this).attr("attch");
+							}
+							$("div.gmshc_active img").attr("src",imgSrc);
+							$("div.gmshc_active input").val(attch);			
+					});						
+				}
+			}).css({"left":(posLeft+50)+"px","top":posTop+"px"});	
+		
+		});		
+
+		
+		$(".gmshc_box_close").click(function(){
+			$("#gmshc_list_icon_cont, #gmshc_list_thumb_cont").hide();			
+			$(".gmshc_list_icon, .gmshc_list_thumb").removeClass("gmshc_active");
+			return false;
+		});
 	
 	 });
 	 
@@ -158,6 +207,8 @@
         return false;
         }	
     }
+	
+	
  
 	 
 })(jQuery);

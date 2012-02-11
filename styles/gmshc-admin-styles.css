@@ -1,6 +1,6 @@
 /**
  * Google Map Shortcode 
- * Version: 3.1
+ * Version: 3.1.1
  * Author: Alain Gonzalez
  * Plugin URI: http://web-argument.com/google-map-shortcode-wordpress-plugin/
 */
@@ -21,7 +21,7 @@
 	height:65px;
 }
 
-.gmshc_icon, .gmshc_thumb {
+.gmshc_icon, .gmshc_thumb, .gmshc_list_thumb, .gmshc_list_icon {
 	float:left; 
 	cursor:pointer;
 	margin:1px; 
@@ -31,15 +31,19 @@
 	text-align:center;
 }
 
-.gmshc_icon {
+.gmshc_icon, .gmshc_list_icon {
 	width:37px;
 	height:37px;
 }
 
-.gmshc_thumb {
+.gmshc_thumb, .gmshc_list_thumb {
 	padding:4px;
 	width:40px;
 	height:40px;
+}
+
+.gmshc_list_icon:hover, .gmshc_list_thumb:hover{
+	border:solid 1px #999;
 }
 
 .gmshc_selected {
@@ -164,6 +168,51 @@ body#media-upload ul#sidemenu {
 .active .mod_enable{
 	display:none;
 }
+
+#gmshc_list_icon_cont, #gmshc_list_thumb_cont{
+	position:absolute;
+	border:solid 1px #999;
+	box-shadow: 8px 8px 8px #AAAAAA;
+	display:none;
+	background-color:#FFF;
+	overflow:hidden;
+}
+
+.gmshc_bx{
+	overflow-y:auto;
+	overflow-x:hidden;
+	width:365px;
+	height:130px;	
+}
+
+.gmshc_bx_tl{
+	overflow:hidden;
+	background-color:#222222;
+	color:#CFCFCF;
+	padding:5px;
+}
+
+.gmshc_bx_tl span{
+	display:block;
+	float:left;
+	width:200px;
+}
+
+.gmshc_icon:hover, .gmshc_thumb:hover{
+	border:solid #CCC 1px !important;
+}
+
+.gmshc_box_close{
+	float:right;
+	display:block;
+	background-image:url(../images/tb-close.png);
+	text-indent:-2000em;
+	width:15px;
+	height:15px;
+	overflow:hidden;
+}
+	
+
 
 
 

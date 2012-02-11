@@ -3,8 +3,8 @@ Contributors: alaingg
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=support%40web%2dargument%2ecom&lc=US&item_name=Web%2dArgument%2ecom&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted
 Tags: google maps, shortcode, map, maps, categories, widget, post map, point, marker, list, location, address, images, geocoder, google maps, animation, slideshow, scroll, module
 Requires at least: 2.5
-Tested up to: 3.3
-Stable tag: 3.1
+Tested up to: 3.3.1
+Stable tag: 3.1.1
 
 Real Friendly integration of Google Maps instances into your blogs. The plugin allows to display multiple maps on your pages. 
 == Description ==
@@ -72,9 +72,13 @@ When the map is deployed or when the Google Map Shortcode Editor panel is open i
 2. Google Map Shortcode Button
 3. Google Map Shortcode editor panel
 4. Google Map Shortcode Media Tab
-5. Insert/Show map.
+5. Insert/Show map
+6. Edit thumbnail or icon
 
 == Changelog ==  
+
+= 3.1.1 =
+ * Editor box added for icons and thumbnails.
 
 = 3.1 =
  * Modules added.
@@ -148,4 +152,4 @@ When the map is deployed or when the Google Map Shortcode Editor panel is open i
 == Upgrade Notice ==
 
 = 3.1 =
-Upgrade is recommended to include the new modules feature and fix some bugs.
+Upgrade is recommended to include the new modules feature and icons and thumbnails editor box.
