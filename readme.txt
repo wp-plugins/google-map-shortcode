@@ -1,10 +1,10 @@
-=== Google Map Shortcode ===
+﻿=== Google Map Shortcode ===
 Contributors: alaingg
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=support%40web%2dargument%2ecom&lc=US&item_name=Web%2dArgument%2ecom&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted
 Tags: google maps, shortcode, map, maps, categories, widget, post map, point, marker, list, location, address, images, geocoder, google maps, animation, slideshow, scroll, module
 Requires at least: 2.5
-Tested up to: 3.3.1
-Stable tag: 3.1.1
+Tested up to: 3.5.1
+Stable tag: 3.1.2
 
 Real Friendly integration of Google Maps instances into your blogs. The plugin allows to display multiple maps on your pages. 
 == Description ==
@@ -29,9 +29,10 @@ Special Features:
 
 Plugin Languages:
 
-*	English - default
+*   English - default
 *   French - Thanks to [Nicolas Mollet](http://mapicons.nicolasmollet.com)
 *   Polish - Thanks to [Łukasz Farysej](http://www.fry.li)
+*   Slovak - Thanks to [Branco Radenovich](http://www.fry.li) 
 *   Spanish - Thanks to [Alain Gonzalez](http://web-argument.com)
 
 Please contact me [alaingoga at gmail] in order to include your language within the plugin package.
@@ -75,7 +76,10 @@ When the map is deployed or when the Google Map Shortcode Editor panel is open i
 5. Insert/Show map
 6. Edit thumbnail or icon
 
-== Changelog ==  
+== Changelog ==
+
+= 3.1.2 =
+ * Slovak language added - Thanks to [Branco Radenovich](http://www.fry.li).  
 
 = 3.1.1 =
  * Editor box added for icons and thumbnails.
