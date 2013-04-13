@@ -3,7 +3,7 @@
 Plugin Name: Google Map Shortcode
 Plugin URI: http://web-argument.com/google-map-shortcode-wordpress-plugin/
 Description: Include Google Maps in your blogs easily and allow multiple interactions.  
-Version: 3.1.1
+Version: 3.1.2
 Author: Alain Gonzalez
 Author URI: http://web-argument.com/
 */
